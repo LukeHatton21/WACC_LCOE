@@ -1,0 +1,197 @@
+Country,Country code,Onshore Wind,Offshore Wind,Solar PV
+Afghanistan,AFG,,,
+Albania,ALB,,,
+Algeria,DZA,0.114,,0.11
+Andorra,AND,,,
+Angola,AGO,,,
+Antigua and Barbuda,ATG,,,
+Argentina,ARG,0.138,,0.138
+Armenia,ARM,,,
+Australia,AUS,0.029,,0.029
+Austria,AUT,0.025,,0.034
+Azerbaijan,AZE,0.07,,0.07
+Bahamas,BHS,,,
+Bahrain,BHR,,,
+Bangladesh,BGD,0.068,,0.068
+Barbados,BRB,,,
+Belarus,BLR,0.099,,0.099
+Belgium,BEL,0.035,0.035,0.019
+Belize,BLZ,,,
+Benin,BEN,,,
+Bhutan,BTN,,,
+Bolivia,BOL,0.087,,0.087
+Bosnia and Herzegovina,BIH,0.105,,0.104
+Botswana,BWA,,,
+Brazil,BRA,0.049,,0.063
+Brunei,BRN,,,
+Bulgaria,BGR,0.04,,0.048
+Burkina Faso,BFA,0.085,,0.058
+Burundi,BDI,,,
+Cabo Verde,CPV,,,
+Cambodia,KHM,,,
+Cameroon,CMR,,,
+Canada,CAN,0.03,,0.043
+Central African Republic,CAF,,,
+Chad,TCD,,,
+Chile,CHL,0.045,,0.035
+China,CHN,0.025,0.049,0.025
+Colombia,COL,0.056,,0.056
+Comoros,COM,,,
+Congo (Congo-Brazzaville),COG,,,
+Costa Rica,CRI,0.056,,0.064
+Côte d'Ivoire,CIV,,,
+Croatia,HRV,0.051,,0.053
+Cuba,CUB,0.116,,0.116
+Cyprus,CYP,0.044,,0.049
+Czechia,CZE,0.051,,0.037
+Democratic Republic of the Congo,COD,,,
+Denmark,DNK,0.015,0.015,0.021
+Djibouti,DJI,,,
+Dominica,DMA,,,
+Dominican Republic,DOM,0.071,,0.056
+Ecuador,ECU,0.122,,0.122
+Egypt,EGY,0.088,,0.088
+El Salvador,SLV,0.092,,0.063
+Equatorial Guinea,GNQ,,,
+Eritrea,ERI,,,
+Estonia,EST,0.051,,0.051
+"Eswatini (fmr. ""Swaziland"")",SWZ,,,
+Ethiopia,ETH,0.056,,0.084
+Fiji,FJI,,,
+Finland,FIN,0.019,,0.048
+France,FRA,0.018,0.047,0.018
+Gabon,GAB,,,
+Gambia,GMB,,,
+Georgia,GEO,,,
+Germany,DEU,0.013,0.029,0.013
+Ghana,GHA,0.095,,0.095
+Greece,GRC,0.041,,0.041
+Grenada,GRD,,,
+Guatemala,GTM,0.063,,0.063
+Guinea,GIN,,,
+Guinea-Bissau,GNB,,,
+Guyana,GUY,,,
+Haiti,HTI,,,
+Holy See,VAT,,,
+Honduras,HND,0.06,,0.046
+Hungary,HUN,0.037,,0.037
+Iceland,ISL,,,
+India,IND,0.059,,0.059
+Indonesia,IDN,0.06,,0.06
+Iran,IRN,0.115,,0.114
+Iraq,IRQ,0.096,,0.096
+Ireland,IRL,0.028,,0.055
+Israel,ISR,0.05,,0.037
+Italy,ITA,0.033,0.061,0.031
+Jamaica,JAM,0.072,,0.072
+Japan,JPN,0.047,0.047,0.023
+Jordan,JOR,0.082,,0.082
+Kazakhstan,KAZ,0.063,,0.063
+Kenya,KEN,0.056,,0.084
+Kiribati,KIR,,,
+Kuwait,KWT,0.053,,0.053
+Kyrgyzstan,KGZ,,,
+Laos,LAO,,,
+Latvia,LVA,0.055,,0.055
+Lebanon,LBN,0.21,,0.21
+Lesotho,LSO,,,
+Liberia,LBR,,,
+Libya,LBY,,,
+Liechtenstein,LIE,,,
+Lithuania,LTU,0.026,,0.057
+Luxembourg,LUX,0.031,,0.031
+Madagascar,MDG,,,
+Malawi,MWI,,,
+Malaysia,MYS,0.054,,0.054
+Maldives,MDV,,,
+Mali,MLI,,,
+Malta,MLT,0.047,,0.018
+Marshall Islands,MHL,,,
+Mauritania,MRT,,,
+Mauritius,MUS,0.06,,0.046
+Mexico,MEX,0.036,,0.072
+Micronesia,FSM,,,
+Moldova,MDA,,,
+Monaco,MCO,,,
+Mongolia,MNG,0.067,,0.08
+Montenegro,MNE,0.056,,0.088
+Morocco,MAR,0.061,,0.067
+Mozambique,MOZ,,,
+Myanmar,MMR,0.095,,0.095
+Namibia,NAM,0.069,,0.042
+Nauru,NRU,,,
+Nepal,NPL,,,
+Netherlands,NLD,0.025,,0.014
+New Zealand,NZL,0.03,,0.043
+Nicaragua,NIC,0.063,,0.092
+Niger,NER,,,
+Nigeria,NGA,,,
+North Korea,PRK,,,
+North Macedonia,MKD,,,
+Norway,NOR,0.045,0.045,0.045
+Oman,OMN,,,
+Pakistan,PAK,0.092,,0.092
+Palau,PLW,,,
+Palestine State,PSE,,,
+Panama,PAN,0.043,,0.043
+Papua New Guinea,PNG,,,
+Paraguay,PRY,,,
+Peru,PER,0.052,,0.052
+Philippines,PHL,0.057,,0.057
+Poland,POL,0.033,0.052,0.039
+Portugal,PRT,0.032,,0.042
+Qatar,QAT,,,
+Romania,ROU,0.057,,0.051
+Russia,RUS,0.063,,0.063
+Rwanda,RWA,0.084,,0.056
+Saint Kitts and Nevis,KNA,,,
+Saint Lucia,LCA,,,
+Saint Vincent and the Grenadines,VCT,,,
+Samoa,WSM,,,
+San Marino,SMR,,,
+Sao Tome and Principe,STP,,,
+Saudi Arabia,SAU,0.062,,0.062
+Senegal,SEN,0.07,,0.043
+Serbia,SRB,,,
+Seychelles,SYC,,,
+Sierra Leone,SLE,,,
+Singapore,SGP,0.046,,0.046
+Slovakia,SVK,0.052,,0.038
+Slovenia,SVN,0.055,,0.042
+Solomon Islands,SLB,,,
+Somalia,SOM,,,
+South Africa,ZAF,0.066,,0.052
+South Korea,KOR,,,
+South Sudan,SSD,,,
+Spain,ESP,0.031,,0.036
+Sri Lanka,LKA,0.103,,0.103
+Sudan,SDN,,,
+Suriname,SUR,,,
+Sweden,SWE,0.035,0.045,0.032
+Switzerland,CHE,0.047,,0.017
+Syria,SYR,,,
+Taiwan,TWN,0.05,,0.037
+Tajikistan,TJK,,,
+Tanzania,TZA,,,
+Thailand,THA,0.058,,0.045
+Timor-Leste,TLS,,,
+Togo,TGO,,,
+Tonga,TON,,,
+Trinidad and Tobago,TTO,,,
+Tunisia,TUN,0.093,,0.093
+Turkey,TUR,0.075,,0.075
+Turkmenistan,TKM,,,
+Tuvalu,TUV,,,
+Uganda,UGA,0.084,,0.069
+Ukraine,UKR,0.099,,0.099
+United Arab Emirates,ARE,0.056,,0.056
+United Kingdom,GBR,0.026,0.02,0.02
+United States,USA,0.03,0.043,0.043
+Uruguay,URY,0.03,,0.042
+Uzbekistan,UZB,,,
+Vanuatu,VUT,,,
+Venezuela,VEN,0.187,,
+Vietnam,VNM,0.051,0.074,
+Yemen,YEM,0.206,,0.172
+Zambia,ZMB,,,
+Zimbabwe,ZWE,,,

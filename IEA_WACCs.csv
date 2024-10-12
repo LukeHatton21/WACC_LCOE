@@ -1,0 +1,285 @@
+﻿Project,Country,Country code,Year,WACC values
+100 MW Solar,Brazil,BRA,2019,0.145
+100 MW Solar,Brazil,BRA,2021,0.136
+100 MW Solar,India,IND,2019,0.117
+100 MW Solar,India,IND,2021,0.112
+100 MW Solar,Indonesia,IDN,2019,0.08
+100 MW Solar,Indonesia,IDN,2021,0.08
+100 MW Solar,Mexico,MEX,2019,0.063
+100 MW Solar,Mexico,MEX,2019,0.063
+100 MW Solar,Mexico,MEX,2021,0.06
+100 MW Solar,Mexico,MEX,2021,0.06
+100 MW Solar,South Africa,ZAR,2019,0.066
+100 MW Solar,South Africa,ZAR,2019,0.066
+100 MW Solar,South Africa,ZAR,2021,0.066
+100 MW Solar,South Africa,ZAR,2021,0.066
+100 MW Solar,Brazil,BRA,2019,0.093
+100 MW Solar,Brazil,BRA,2021,0.083
+100 MW Solar,India,IND,2019,0.08
+100 MW Solar,India,IND,2021,0.08
+100 MW Solar,Indonesia,IDN,2019,0.103
+100 MW Solar,Indonesia,IDN,2021,0.103
+100 MW Solar,South Africa,ZAR,2019,0.072
+100 MW Solar,South Africa,ZAR,2021,0.058
+100 MW Solar,Brazil,BRA,2019,0.112
+100 MW Solar,Brazil,BRA,2021,0.14
+100 MW Solar,India,IND,2019,0.082
+100 MW Solar,India,IND,2021,0.082
+100 MW Solar,Indonesia,IDN,2019,0.087
+100 MW Solar,Indonesia,IDN,2021,0.095
+100 MW Solar,Mexico,MEX,2019,0.118
+100 MW Solar,Mexico,MEX,2021,0.11
+100 MW Solar,South Africa,ZAR,2019,0.124
+100 MW Solar,South Africa,ZAR,2021,0.109
+100 MW Solar,Brazil,BRA,2019,0.12
+100 MW Solar,Brazil,BRA,2021,0.16
+100 MW Solar,Mexico,MEX,2019,0.1
+100 MW Solar,Mexico,MEX,2021,0.12
+100 MW Solar,South Africa,ZAR,2019,0.12
+100 MW Solar,South Africa,ZAR,2021,0.16
+100 MW Solar,India,IND,2019,0.159
+100 MW Solar,India,IND,2021,0.17
+100 MW Solar,Indonesia,IDN,2019,0.144
+100 MW Solar,Indonesia,IDN,2021,0.155
+100 MW Solar,South Africa,ZAR,2019,0.171
+100 MW Solar,South Africa,ZAR,2021,0.181
+100 MW Solar,Brazil,BRA,2021,0.18
+100 MW Solar,Indonesia,IDN,2019,0.11
+100 MW Solar,Indonesia,IDN,2021,0.12
+100 MW Solar,India,IND,2021,0.09
+100 MW Solar,Brazil,BRA,2021,0.1
+100 MW Solar,India,IND,2021,0.09
+100 MW Solar,Mexico,MEX,2021,0.095
+100 MW Solar,South Africa,ZAR,2021,0.115
+100 MW Solar,Indonesia,IDN,2021,0.086
+100 MW Solar,Brazil,BRA,2019,0.091
+100 MW Solar,Brazil,BRA,2021,0.105
+100 MW Solar,India,IND,2019,0.089
+100 MW Solar,India,IND,2021,0.103
+100 MW Solar,Indonesia,IDN,2019,0.065
+100 MW Solar,Indonesia,IDN,2021,0.08
+100 MW Solar,Mexico,MEX,2019,0.096
+100 MW Solar,Mexico,MEX,2021,0.11
+100 MW Solar,South Africa,ZAR,2019,0.102
+100 MW Solar,South Africa,ZAR,2021,0.117
+100 MW Solar,Brazil,BRA,2019,0.119
+100 MW Solar,Brazil,BRA,2021,0.112
+100 MW Solar,India,IND,2019,0.096
+100 MW Solar,India,IND,2021,0.089
+100 MW Solar,Indonesia,IDN,2019,0.08
+100 MW Solar,Indonesia,IDN,2021,0.072
+100 MW Solar,Mexico,MEX,2019,0.089
+100 MW Solar,Mexico,MEX,2021,0.081
+100 MW Solar,South Africa,ZAR,2019,0.102
+100 MW Solar,South Africa,ZAR,2021,0.095
+100 MW Solar,Brazil,BRA,2019,0.111
+100 MW Solar,Brazil,BRA,2021,0.108
+100 MW Solar,Mexico,MEX,2019,0.093
+100 MW Solar,Mexico,MEX,2021,0.103
+100 MW Solar,Brazil,BRA,2019,0.151
+100 MW Solar,Mexico,MEX,2019,0.128
+100 MW Solar,Mexico,MEX,2021,0.131
+100 MW Solar,India,IND,2021,0.107
+100 MW Solar,Indonesia,IDN,2021,0.087
+100 MW Solar,Brazil,BRA,2019,0.126
+100 MW Solar,Brazil,BRA,2021,0.135
+100 MW Solar,Brazil,BRA,2019,0.126
+100 MW Solar,Brazil,BRA,2021,0.147
+100 MW Solar,India,IND,2019,0.082
+100 MW Solar,India,IND,2021,0.082
+100 MW Solar,Indonesia,IDN,2019,0.103
+100 MW Solar,Indonesia,IDN,2021,0.103
+100 MW Solar,Brazil,BRA,2019,0.121
+100 MW Solar,Brazil,BRA,2021,0.127
+100 MW Solar,India,IND,2019,0.106
+100 MW Solar,India,IND,2021,0.11
+100 MW Solar,Indonesia,IDN,2019,0.092
+100 MW Solar,Indonesia,IDN,2021,0.096
+100 MW Solar,Mexico,MEX,2019,0.099
+100 MW Solar,Mexico,MEX,2021,0.104
+100 MW Solar,South Africa,ZAR,2019,0.13
+100 MW Solar,South Africa,ZAR,2021,0.135
+100 MW Solar,Brazil,BRA,2019,0.073
+100 MW Solar,Brazil,BRA,2021,0.066
+100 MW Solar,India,IND,2019,0.077
+100 MW Solar,India,IND,2021,0.07
+100 MW Solar,Indonesia,IDN,2019,0.072
+100 MW Solar,Indonesia,IDN,2021,0.065
+100 MW Solar,Mexico,MEX,2019,0.089
+100 MW Solar,Mexico,MEX,2021,0.081
+100 MW Solar,South Africa,ZAR,2019,0.101
+100 MW Solar,South Africa,ZAR,2021,0.094
+100 MW Solar,India,IND,2019,0.068
+100 MW Solar,India,IND,2021,0.068
+100 MW Solar,Indonesia,IDN,2019,0.057
+100 MW Solar,Indonesia,IDN,2021,0.057
+100 MW Solar,South Africa,ZAR,2019,0.08
+100 MW Solar,South Africa,ZAR,2021,0.08
+100 MW Solar,Brazil,BRA,2019,0.097
+100 MW Solar,Brazil,BRA,2021,0.087
+100 MW Solar,India,IND,2019,0.1
+100 MW Solar,India,IND,2021,0.1
+100 MW Solar,Indonesia,IDN,2019,0.123
+100 MW Solar,Indonesia,IDN,2021,0.123
+100 MW Solar,South Africa,ZAR,2019,0.086
+100 MW Solar,South Africa,ZAR,2021,0.072
+100 MW Solar,Brazil,BRA,2019,0.126
+100 MW Solar,Brazil,BRA,2021,0.153
+100 MW Solar,India,IND,2019,0.096
+100 MW Solar,India,IND,2021,0.096
+100 MW Solar,Indonesia,IDN,2019,0.103
+100 MW Solar,Indonesia,IDN,2021,0.103
+100 MW Solar,Mexico,MEX,2019,0.132
+100 MW Solar,Mexico,MEX,2021,0.125
+100 MW Solar,South Africa,ZAR,2019,0.139
+100 MW Solar,South Africa,ZAR,2021,0.132
+100 MW Solar,Brazil,BRA,2021,0.183
+100 MW Solar,Indonesia,IDN,2019,0.12
+100 MW Solar,Indonesia,IDN,2021,0.13
+100 MW Solar,Brazil,BRA,2021,0.125
+100 MW Solar,India,IND,2021,0.115
+100 MW Solar,Mexico,MEX,2021,0.12
+100 MW Solar,South Africa,ZAR,2021,0.145
+100 MW Solar,Indonesia,IDN,2021,0.106
+100 MW Solar,Brazil,BRA,2019,0.133
+100 MW Solar,Brazil,BRA,2021,0.119
+100 MW Solar,India,IND,2019,0.111
+100 MW Solar,India,IND,2021,0.096
+100 MW Solar,Indonesia,IDN,2019,0.095
+100 MW Solar,Indonesia,IDN,2021,0.08
+100 MW Solar,Mexico,MEX,2019,0.103
+100 MW Solar,Mexico,MEX,2021,0.089
+100 MW Solar,South Africa,ZAR,2019,0.117
+100 MW Solar,South Africa,ZAR,2021,0.102
+100 MW Solar,Indonesia,IDN,2021,0.118
+100 MW Solar,Brazil,BRA,2019,0.167
+100 MW Solar,Brazil,BRA,2021,0.181
+100 MW Solar,India,IND,2019,0.111
+100 MW Solar,India,IND,2021,0.111
+100 MW Solar,Indonesia,IDN,2019,0.148
+100 MW Solar,Indonesia,IDN,2021,0.148
+100 MW Solar,Brazil,BRA,2019,0.079
+100 MW Solar,Brazil,BRA,2021,0.073
+100 MW Solar,India,IND,2019,0.084
+100 MW Solar,India,IND,2021,0.077
+100 MW Solar,Indonesia,IDN,2019,0.08
+100 MW Solar,Indonesia,IDN,2021,0.072
+100 MW Solar,Mexico,MEX,2019,0.096
+100 MW Solar,Mexico,MEX,2021,0.089
+100 MW Solar,South Africa,ZAR,2019,0.108
+100 MW Solar,South Africa,ZAR,2021,0.101
+100 MW Solar,India,IND,2019,0.096
+100 MW Solar,India,IND,2021,0.096
+100 MW Solar,Indonesia,IDN,2019,0.087
+100 MW Solar,Indonesia,IDN,2021,0.087
+100 MW Solar,South Africa,ZAR,2019,0.109
+100 MW Solar,South Africa,ZAR,2021,0.109
+100 MW Solar,Brazil,BRA,2019,0.1225
+100 MW Solar,India,IND,2019,0.095
+100 MW Solar,Indonesia,IDN,2019,0.0925
+100 MW Solar,Mexico,MEX,2019,0.0975
+100 MW Solar,South Africa,ZAR,2019,0.1025
+100 MW Solar,Brazil,BRA,2021,0.13
+100 MW Solar,India,IND,2021,0.0975
+100 MW Solar,Indonesia,IDN,2021,0.1
+100 MW Solar,Mexico,MEX,2021,0.0975
+100 MW Solar,South Africa,ZAR,2021,0.1025
+100 MW Solar,Brazil,BRA,2022,0.05742
+100 MW Solar,Brazil,BRA,2022,0.1525
+100 MW Solar,Brazil,BRA,2022,0.13
+100 MW Solar,Brazil,BRA,2022,0.086895683
+100 MW Solar,Brazil,BRA,2022,0.115
+100 MW Solar,Brazil,BRA,2022,0.105
+100 MW Solar,Brazil,BRA,2022,0.124104437
+100 MW Solar,Brazil,BRA,2022,0.100695683
+100 MW Solar,Brazil,BRA,2022,0.106695683
+100 MW Solar,Brazil,BRA,2022,0.0792
+100 MW Solar,Brazil,BRA,2022,0.08
+100 MW Solar,Brazil,BRA,2022,0.06699
+100 MW Solar,Brazil,BRA,2022,0.1725
+100 MW Solar,Brazil,BRA,2022,0.13
+100 MW Solar,Brazil,BRA,2022,0.086895683
+100 MW Solar,Brazil,BRA,2022,0.14
+100 MW Solar,Brazil,BRA,2022,0.11
+100 MW Solar,Brazil,BRA,2022,0.126142836
+100 MW Solar,Brazil,BRA,2022,0.120695683
+100 MW Solar,Brazil,BRA,2022,0.119895683
+100 MW Solar,Brazil,BRA,2022,0.0792
+100 MW Solar,Brazil,BRA,2022,0.1
+100 MW Solar,India,IND,2022,0.0756
+100 MW Solar,India,IND,2022,0.1219
+100 MW Solar,India,IND,2022,0.0925
+100 MW Solar,India,IND,2022,0.105
+100 MW Solar,India,IND,2022,0.049934689
+100 MW Solar,India,IND,2022,0.07
+100 MW Solar,India,IND,2022,0.09
+100 MW Solar,India,IND,2022,0.060084689
+100 MW Solar,India,IND,2022,0.1
+100 MW Solar,India,IND,2022,0.1
+100 MW Solar,India,IND,2022,0.084
+100 MW Solar,India,IND,2022,0.08
+100 MW Solar,India,IND,2022,0.08176
+100 MW Solar,India,IND,2022,0.1419
+100 MW Solar,India,IND,2022,0.0975
+100 MW Solar,India,IND,2022,0.105
+100 MW Solar,India,IND,2022,0.049934689
+100 MW Solar,India,IND,2022,0.09
+100 MW Solar,India,IND,2022,0.12
+100 MW Solar,India,IND,2022,0.074084689
+100 MW Solar,India,IND,2022,0.12
+100 MW Solar,India,IND,2022,0.12
+100 MW Solar,India,IND,2022,0.084
+100 MW Solar,India,IND,2022,0.1
+100 MW Solar,Indonesia,IDN,2022,0.1201
+100 MW Solar,Indonesia,IDN,2022,0.07
+100 MW Solar,Indonesia,IDN,2022,0.075366143
+100 MW Solar,Indonesia,IDN,2022,0.063526143
+100 MW Solar,Indonesia,IDN,2022,0.087366143
+100 MW Solar,Indonesia,IDN,2022,0.078
+100 MW Solar,Indonesia,IDN,2022,0.085366143
+100 MW Solar,Indonesia,IDN,2022,0.069766143
+100 MW Solar,Indonesia,IDN,2022,0.1401
+100 MW Solar,Indonesia,IDN,2022,0.07
+100 MW Solar,Indonesia,IDN,2022,0.075366143
+100 MW Solar,Indonesia,IDN,2022,0.063526143
+100 MW Solar,Indonesia,IDN,2022,0.092366143
+100 MW Solar,Indonesia,IDN,2022,0.0936
+100 MW Solar,Indonesia,IDN,2022,0.100966143
+100 MW Solar,Indonesia,IDN,2022,0.069766143
+100 MW Solar,Mexico,MEX,2022,0.106927226
+100 MW Solar,Mexico,MEX,2022,0.1385
+100 MW Solar,Mexico,MEX,2022,0.105727226
+100 MW Solar,Mexico,MEX,2022,0.07
+100 MW Solar,Mexico,MEX,2022,0.11
+100 MW Solar,Mexico,MEX,2022,0.098943988
+100 MW Solar,Mexico,MEX,2022,0.105727226
+100 MW Solar,Mexico,MEX,2022,0.081727226
+100 MW Solar,Mexico,MEX,2022,0.09
+100 MW Solar,Mexico,MEX,2022,0.116377226
+100 MW Solar,Mexico,MEX,2022,0.1585
+100 MW Solar,Mexico,MEX,2022,0.105727226
+100 MW Solar,Mexico,MEX,2022,0.07
+100 MW Solar,Mexico,MEX,2022,0.135
+100 MW Solar,Mexico,MEX,2022,0.10913598
+100 MW Solar,Mexico,MEX,2022,0.125727226
+100 MW Solar,Mexico,MEX,2022,0.081727226
+100 MW Solar,Mexico,MEX,2022,0.11
+100 MW Solar,South Africa,ZAR,2022,0.0684
+100 MW Solar,South Africa,ZAR,2022,0.126717475
+100 MW Solar,South Africa,ZAR,2022,0.155
+100 MW Solar,South Africa,ZAR,2022,0.109717475
+100 MW Solar,South Africa,ZAR,2022,0.125
+100 MW Solar,South Africa,ZAR,2022,0.06
+100 MW Solar,South Africa,ZAR,2022,0.0864
+100 MW Solar,South Africa,ZAR,2022,0.07776
+100 MW Solar,South Africa,ZAR,2022,0.126717475
+100 MW Solar,South Africa,ZAR,2022,0.175
+100 MW Solar,South Africa,ZAR,2022,0.109717475
+100 MW Solar,South Africa,ZAR,2022,0.155
+100 MW Solar,South Africa,ZAR,2022,0.08
+100 MW Solar,South Africa,ZAR,2022,0.0864
+100 MW Solar,Brazil,BRA,2022,0.1125
+100 MW Solar,India,IND,2022,0.095
+100 MW Solar,Indonesia,IDN,2022,0.0825
+100 MW Solar,Mexico,MEX,2022,0.11
+100 MW Solar,South Africa,ZAR,2022,0.11

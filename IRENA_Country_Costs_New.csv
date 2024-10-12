@@ -1,0 +1,251 @@
+﻿country,name,index,Country,Region,Onshore_Wind_Cost,Solar_Cost,Wind_CAPEX_2023,Solar_CAPEX_2023,Wind_Percentage,Solar_Percentage
+AD,Andorra,1,Andorra,Europe,,,1583,758,1.009957925,0.732734273
+AE,United Arab Emirates,2,United Arab Emirates,Middle East,,,1715,758,1.094174252,0.732734273
+AF,Afghanistan,3,Afghanistan,Other Asia,,,1160,758,0.740082876,0.732734273
+AG,Antigua and Barbuda,4,Antigua and Barbuda,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+AI,Anguilla,5,Anguilla,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+AL,Albania,6,Albania,Europe,,,1583,758,1.009957925,0.732734273
+AM,Armenia,7,Armenia,Other,,,1160,758,0.740082876,0.732734273
+AO,Angola,8,Angola,Africa,,,1614,758,1.029736002,0.732734273
+AR,Argentina,9,Argentina,Other South America,,830,1563,830,0.997197875,0.802334362
+AS,American Samoa,10,American Samoa,Other,,,1160,758,0.740082876,0.732734273
+AT,Austria,11,Austria,Europe,,678,1583,678,1.009957925,0.655400841
+AU,Australia,12,Australia,Oceania,,989,1610,989,1.027183992,0.95603456
+AW,Aruba,13,Aruba,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+AX,Aland Islands,14,Aland Islands,Other,,,1160,758,0.740082876,0.732734273
+AZ,Azerbaijan,15,Azerbaijan,Other,,,1160,758,0.740082876,0.732734273
+BA,Bosnia and Herzegovina,16,Bosnia and Herzegovina,Europe,,,1583,758,1.009957925,0.732734273
+BB,Barbados,17,Barbados,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+BD,Bangladesh,18,Bangladesh,Other Asia,,,1160,758,0.740082876,0.732734273
+BE,Belgium,19,Belgium,Europe,,965,1583,965,1.009957925,0.93283453
+BF,Burkina Faso,20,Burkina Faso,Africa,,,1614,758,1.029736002,0.732734273
+BG,Bulgaria,21,Bulgaria,Europe,,659,1583,659,1.009957925,0.63703415
+BH,Bahrain,22,Bahrain,Middle East,,,1715,758,1.094174252,0.732734273
+BI,Burundi,23,Burundi,Africa,,,1614,758,1.029736002,0.732734273
+BJ,Benin,24,Benin,Africa,,,1614,758,1.029736002,0.732734273
+BL,Saint Barthélemy,25,Saint Barthélemy,Other,,,1160,758,0.740082876,0.732734273
+BM,Bermuda,26,Bermuda,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+BN,Brunei Darussalam,27,Brunei Darussalam,Other Asia,,,1160,758,0.740082876,0.732734273
+BO,Bolivia,28,Bolivia,Other South America,,,1563,758,0.997197875,0.732734273
+BQ,"Bonaire, Sint Eustatius and Saba",29,"Bonaire, Sint Eustatius and Saba",Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+BR,Brazil,30,Brazil,Brazil,1079,747.2,1079,747,0.688404675,0.72229426
+BS,Bahamas,31,Bahamas,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+BT,Bhutan,32,Bhutan,Other Asia,,,1160,758,0.740082876,0.732734273
+BV,Bouvet Island,33,Bouvet Island,Other,,,1160,758,0.740082876,0.732734273
+BW,Botswana,34,Botswana,Africa,,,1614,758,1.029736002,0.732734273
+BY,Belarus,35,Belarus,Other,,,1160,758,0.740082876,0.732734273
+BZ,Belize,36,Belize,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+CA,Canada,37,Canada,North America,1420,1337,1420,1337,0.905963521,1.292434991
+CC,Cocos (Keeling) Islands,38,Cocos (Keeling) Islands,Other,,,1160,758,0.740082876,0.732734273
+CD,"Congo, The Democratic Republic of ",39,"Congo, The Democratic Republic of",Africa,,,1614,758,1.029736002,0.732734273
+CF,Central African Republic,40,Central African Republic,Africa,,,1614,758,1.029736002,0.732734273
+CG,Congo,41,Congo,Africa,,,1614,758,1.029736002,0.732734273
+CH,Switzerland,42,Switzerland,Europe,,,1583,758,1.009957925,0.732734273
+CI,Cote d'Ivoire,43,Cote d'Ivoire,Africa,,,1614,758,1.029736002,0.732734273
+CK,Cook Islands,44,Cook Islands,Other,,,1160,758,0.740082876,0.732734273
+CL,Chile,45,Chile,Other South America,,954,1563,954,0.997197875,0.922201183
+CM,Cameroon,46,Cameroon,Africa,,,1614,758,1.029736002,0.732734273
+CN,China,47,China,China,986,671,986,671,0.629070445,0.648634165
+CO,Colombia,48,Colombia,Other South America,,,1563,758,0.997197875,0.732734273
+CR,Costa Rica,49,Costa Rica,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+CU,Cuba,50,Cuba,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+CV,Cape Verde,51,Cape Verde,Africa,,,1614,758,1.029736002,0.732734273
+CW,Curaçao,52,Cura√ßao,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+CX,Christmas Island,53,Christmas Island,Other,,,1160,758,0.740082876,0.732734273
+CY,Cyprus,54,Cyprus,Europe,,854,1583,854,1.009957925,0.825534392
+CZ,Czechia,55,Czechia,Europe,,663,1583,663,1.009957925,0.640900822
+DE,Germany,56,Germany,Europe,1750,731,1750,731,1.116504339,0.70663424
+DJ,Djibouti,57,Djibouti,Africa,,,1614,758,1.029736002,0.732734273
+DK,Denmark,58,Denmark,Europe,,1147.5,1583,1148,1.009957925,1.109251423
+DM,Dominica,59,Dominica,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+DO,Dominican Republic,60,Dominican Republic,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+DZ,Algeria,61,Algeria,Africa,,,1614,758,1.029736002,0.732734273
+EC,Ecuador,62,Ecuador,Other South America,,,1563,758,0.997197875,0.732734273
+EE,Estonia,63,Estonia,Europe,,705,1583,705,1.009957925,0.681500874
+EG,Egypt,64,Egypt,Africa,,,1614,758,1.029736002,0.732734273
+EH,Western Sahara,65,Western Sahara,Africa,,,1614,758,1.029736002,0.732734273
+ER,Eritrea,66,Eritrea,Africa,,,1614,758,1.029736002,0.732734273
+ES,Spain,67,Spain,Europe,1158,671,1158,671,0.738806871,0.648634165
+ET,Ethiopia,68,Ethiopia,Africa,,,1614,758,1.029736002,0.732734273
+FI,Finland,69,Finland,Europe,,,1583,758,1.009957925,0.732734273
+FJ,Fiji,70,Fiji,Oceania,,,1610,758,1.027183992,0.732734273
+FK,Falkland Islands (Malvinas),71,Falkland Islands (Malvinas),Other,,,1160,758,0.740082876,0.732734273
+FM,"Micronesia, Federated States of",72,"Micronesia, Federated States of",Oceania,,,1610,758,1.027183992,0.732734273
+FO,Faroe Islands,73,Faroe Islands,Other,,,1160,758,0.740082876,0.732734273
+FR,France,74,France,Europe,1746,955,1746,955,1.113952329,0.923167851
+GA,Gabon,75,Gabon,Africa,,,1614,758,1.029736002,0.732734273
+GB,United Kingdom,76,United Kingdom,Europe,1273,933,1273,933,0.812177156,0.901901157
+GD,Grenada,77,Grenada,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+GE,Georgia,78,Georgia,Other,,,1160,758,0.740082876,0.732734273
+GF,French Guiana,79,French Guiana,Other South America,,,1563,758,0.997197875,0.732734273
+GG,Guernsey,80,Guernsey,United Kingdom,,,1482,910,0.945519674,0.879667795
+GH,Ghana,81,Ghana,Africa,,,1614,758,1.029736002,0.732734273
+GI,Gibraltar,82,Gibraltar,Europe,,,1583,758,1.009957925,0.732734273
+GL,Greenland,83,Greenland,North America,,,1484,758,0.946795679,0.732734273
+GM,Gambia,84,Gambia,Africa,,,1614,758,1.029736002,0.732734273
+GN,Guinea,85,Guinea,Africa,,,1614,758,1.029736002,0.732734273
+GP,Guadeloupe,86,Guadeloupe,Other,,,1160,758,0.740082876,0.732734273
+GQ,Equatorial Guinea,87,Equatorial Guinea,Africa,,,1614,758,1.029736002,0.732734273
+GR,Greece,88,Greece,Europe,,626,1583,626,1.009957925,0.605134109
+GS,South Georgia & The South Sandwich Islands,89,South Georgia & The South Sandwich Islands,Other,,,1160,758,0.740082876,0.732734273
+GT,Guatemala,90,Guatemala,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+GU,Guam,91,Guam,Other,,,1160,758,0.740082876,0.732734273
+GW,Guinea-Bissau,92,Guinea-Bissau,Africa,,,1614,758,1.029736002,0.732734273
+GY,Guyana,93,Guyana,Other South America,,,1563,758,0.997197875,0.732734273
+HK,Hong Kong,94,Hong Kong,China,,,986,671,0.629070445,0.648634165
+HM,Heard and Mc Donald Islands,95,Heard and Mc Donald Islands,Other,,,1160,758,0.740082876,0.732734273
+HN,Honduras,96,Honduras,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+HR,Croatia,97,Croatia,Europe,,1226.1,1583,1226,1.009957925,1.18523152
+HT,Haiti,98,Haiti,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+HU,Hungary,99,Hungary,Europe,,1078,1583,1078,1.009957925,1.042068003
+ID,Indonesia,100,Indonesia,Other Asia,,798,1160,798,0.740082876,0.771400989
+IE,Ireland,101,Ireland,Europe,,686,1583,686,1.009957925,0.663134184
+IL,Israel,102,Israel,Middle East,,,1715,758,1.094174252,0.732734273
+IM,Isle of Man,103,Isle of Man,Europe,,,1583,758,1.009957925,0.732734273
+IN,India,104,India,India,,711,1208,711,0.770706995,0.687300882
+IO,British Indian Ocean Territory,105,British Indian Ocean Territory,Other,,,1160,758,0.740082876,0.732734273
+IQ,Iraq,106,Iraq,Middle East,,,1715,758,1.094174252,0.732734273
+IR,"Iran, Islamic Republic of",107,"Iran, Islamic Republic of",Middle East,,,1715,758,1.094174252,0.732734273
+IS,Iceland,108,Iceland,Europe,,,1583,758,1.009957925,0.732734273
+IT,Italy,109,Italy,Europe,1369,821,1369,821,0.873425394,0.793634351
+JE,Jersey,110,Jersey,United Kingdom,,,1482,910,0.945519674,0.879667795
+JM,Jamaica,111,Jamaica,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+JO,Jordan,112,Jordan,Middle East,,,1715,758,1.094174252,0.732734273
+JP,Japan,113,Japan,Other Asia,2384,1875,2384,1875,1.520997911,1.812502325
+KE,Kenya,114,Kenya,Africa,,,1614,758,1.029736002,0.732734273
+KG,Kyrgyzstan,115,Kyrgyzstan,Other,,,1160,758,0.740082876,0.732734273
+KH,Cambodia,116,Cambodia,Other Asia,,,1160,758,0.740082876,0.732734273
+KI,Kiribati,117,Kiribati,Oceania,,,1610,758,1.027183992,0.732734273
+KM,Comoros,118,Comoros,Africa,,,1614,758,1.029736002,0.732734273
+KN,Saint Kitts & Nevis,119,Saint Kitts & Nevis,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+KP,"Korea, Democratic People's Republic of",120,"Korea, Democratic People's Republic of",Other Asia,,,1160,758,0.740082876,0.732734273
+KR,"Korea, Republic of",121,"Korea, Republic of",Other Asia,,1205,1160,1205,0.740082876,1.164834827
+KW,Kuwait,122,Kuwait,Middle East,,,1715,758,1.094174252,0.732734273
+KY,Cayman Islands,123,Cayman Islands,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+KZ,Kazakstan,124,Kazakstan,Other,,,1160,758,0.740082876,0.732734273
+LA,"Lao, People's Democratic Republic",125,"Lao, People's Democratic Republic",Other Asia,,,1160,758,0.740082876,0.732734273
+LB,Lebanon,126,Lebanon,Middle East,,,1715,758,1.094174252,0.732734273
+LC,Saint Lucia,127,Saint Lucia,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+LI,Liechtenstein,128,Liechtenstein,Europe,,,1583,758,1.009957925,0.732734273
+LK,Sri Lanka,129,Sri Lanka,Other Asia,,,1160,758,0.740082876,0.732734273
+LR,Liberia,130,Liberia,Africa,,,1614,758,1.029736002,0.732734273
+LS,Lesotho,131,Lesotho,Africa,,,1614,758,1.029736002,0.732734273
+LT,Lithuania,132,Lithuania,Europe,,,1583,758,1.009957925,0.732734273
+LU,Luxembourg,133,Luxembourg,Europe,,684,1583,684,1.009957925,0.661200848
+LV,Latvia,134,Latvia,Europe,,716,1583,716,1.009957925,0.692134221
+LY,Libyan Arab Jamahiriya,135,Libyan Arab Jamahiriya,Africa,,,1614,758,1.029736002,0.732734273
+MA,Morocco,136,Morocco,Africa,,,1614,758,1.029736002,0.732734273
+MC,Monaco,137,Monaco,Europe,,,1583,758,1.009957925,0.732734273
+MD,"Moldova, Republic of",138,"Moldova, Republic of",Europe,,,1583,758,1.009957925,0.732734273
+ME,Montenegro,139,Montenegro,Europe,,,1583,758,1.009957925,0.732734273
+MF,Saint Martin,140,Saint Martin,Other,,,1160,758,0.740082876,0.732734273
+MG,Madagascar,141,Madagascar,Africa,,,1614,758,1.029736002,0.732734273
+MH,Marshall Islands,142,Marshall Islands,Oceania,,,1610,758,1.027183992,0.732734273
+MK,"Macedonia, The Former Yugoslav Republic Of",143,"Macedonia, The Former Yugoslav Republic Of",Europe,,,1583,758,1.009957925,0.732734273
+ML,Mali,144,Mali,Africa,,,1614,758,1.029736002,0.732734273
+MM,Myanmar,145,Myanmar,Other Asia,,,1160,758,0.740082876,0.732734273
+MN,Mongolia,146,Mongolia,Other Asia,,,1160,758,0.740082876,0.732734273
+MO,Macao,147,Macao,China,,,986,671,0.629070445,0.648634165
+MP,Northern Mariana Islands,148,Northern Mariana Islands,Other,,,1160,758,0.740082876,0.732734273
+MQ,Martinique,149,Martinique,Other,,,1160,758,0.740082876,0.732734273
+MR,Mauritania,150,Mauritania,Africa,,,1614,758,1.029736002,0.732734273
+MS,Montserrat,151,Montserrat,Other,,,1160,758,0.740082876,0.732734273
+MT,Malta,152,Malta,Europe,,,1583,758,1.009957925,0.732734273
+MU,Mauritius,153,Mauritius,Africa,,,1614,758,1.029736002,0.732734273
+MV,Maldives,154,Maldives,Other Asia,,,1160,758,0.740082876,0.732734273
+MW,Malawi,155,Malawi,Africa,,,1614,758,1.029736002,0.732734273
+MX,Mexico,156,Mexico,North America,1577,1050,1577,1050,1.00612991,1.015001302
+MY,Malaysia,157,Malaysia,Other Asia,,,1160,758,0.740082876,0.732734273
+MZ,Mozambique,158,Mozambique,Africa,,,1614,758,1.029736002,0.732734273
+NA,Namibia,159,Namibia,Africa,,,1614,758,1.029736002,0.732734273
+NC,New Caledonia,160,New Caledonia,Other,,,1160,758,0.740082876,0.732734273
+NE,Niger,161,Niger,Africa,,,1614,758,1.029736002,0.732734273
+NF,Norfolk Island,162,Norfolk Island,Other,,,1160,758,0.740082876,0.732734273
+NG,Nigeria,163,Nigeria,Africa,,,1614,758,1.029736002,0.732734273
+NI,Nicaragua,164,Nicaragua,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+NL,Netherlands,165,Netherlands,Europe,,753,1583,753,1.009957925,0.727900934
+NO,Norway,166,Norway,Europe,,,1583,758,1.009957925,0.732734273
+NP,Nepal,167,Nepal,Other Asia,,,1160,758,0.740082876,0.732734273
+NR,Nauru,168,Nauru,Oceania,,,1610,758,1.027183992,0.732734273
+NU,Niue,169,Niue,Other,,,1160,758,0.740082876,0.732734273
+NZ,New Zealand,170,New Zealand,Oceania,,,1610,758,1.027183992,0.732734273
+OM,Oman,171,Oman,Middle East,,,1715,758,1.094174252,0.732734273
+PA,Panama,172,Panama,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+PE,Peru,173,Peru,Other South America,,,1563,758,0.997197875,0.732734273
+PF,French Polynesia,174,French Polynesia,Other,,,1160,758,0.740082876,0.732734273
+PG,Papua New Guinea,175,Papua New Guinea,Oceania,,,1610,758,1.027183992,0.732734273
+PH,Philippines,176,Philippines,Other Asia,,,1160,758,0.740082876,0.732734273
+PK,Pakistan,177,Pakistan,Other Asia,,,1160,758,0.740082876,0.732734273
+PL,Poland,178,Poland,Europe,,1049.6,1583,1050,1.009957925,1.014614635
+PM,Saint Pierre and Miquelon,179,Saint Pierre and Miquelon,Other,,,1160,758,0.740082876,0.732734273
+PN,Pitcairn,180,Pitcairn,Other,,,1160,758,0.740082876,0.732734273
+PR,Puerto Rico,181,Puerto Rico,Other,,,1160,758,0.740082876,0.732734273
+PS,"Palestinian Territory, Occupied",182,"Palestinian Territory, Occupied",Middle East,,,1715,758,1.094174252,0.732734273
+PT,Portugal,183,Portugal,Europe,,723,1583,723,1.009957925,0.698900896
+PW,Palau,184,Palau,Oceania,,,1610,758,1.027183992,0.732734273
+PY,Paraguay,185,Paraguay,Other South America,,,1563,758,0.997197875,0.732734273
+QA,Qatar,186,Qatar,Middle East,,,1715,758,1.094174252,0.732734273
+RE,Reunion,187,Reunion,Other,,,1160,758,0.740082876,0.732734273
+RO,Romania,188,Romania,Europe,,743,1583,743,1.009957925,0.718234255
+RS,Republic of Serbia,189,Republic of Serbia,Europe,,,1583,758,1.009957925,0.732734273
+RU,Russia Federation,190,Russia Federation,Eurasia,,1248,1611,1248,1.027821994,1.206401547
+RW,Rwanda,191,Rwanda,Africa,,,1614,758,1.029736002,0.732734273
+SA,Saudi Arabia,192,Saudi Arabia,Middle East,,794,1715,794,1.094174252,0.767534318
+SB,Solomon Islands,193,Solomon Islands,Oceania,,,1610,758,1.027183992,0.732734273
+SC,Seychelles,194,Seychelles,Africa,,,1614,758,1.029736002,0.732734273
+SD,Sudan,195,Sudan,Africa,,,1614,758,1.029736002,0.732734273
+SE,Sweden,196,Sweden,Europe,1535,,1535,758,0.979333806,0.732734273
+SG,Singapore,197,Singapore,Other Asia,,,1160,758,0.740082876,0.732734273
+SH,Saint Helena,198,Saint Helena,Other,,,1160,758,0.740082876,0.732734273
+SI,Slovenia,199,Slovenia,Europe,,965.4,1583,965,1.009957925,0.933221197
+SJ,Svalbard and Jan Mayen,200,Svalbard and Jan Mayen,Other,,,1160,758,0.740082876,0.732734273
+SK,Slovakia,201,Slovakia,Europe,,,1583,758,1.009957925,0.732734273
+SL,Sierra Leone,202,Sierra Leone,Africa,,,1614,758,1.029736002,0.732734273
+SM,San Marino,203,San Marino,Europe,,,1583,758,1.009957925,0.732734273
+SN,Senegal,204,Senegal,Africa,,,1614,758,1.029736002,0.732734273
+SO,Somalia,205,Somalia,Africa,,,1614,758,1.029736002,0.732734273
+SR,Suriname,206,Suriname,Other South America,,,1563,758,0.997197875,0.732734273
+SS,South Sudan,207,South Sudan,Africa,,,1614,758,1.029736002,0.732734273
+ST,Sao Tome and Principe,208,Sao Tome and Principe,Africa,,,1614,758,1.029736002,0.732734273
+SV,El Salvador,209,El Salvador,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+SX,Sint Maarten,210,Sint Maarten,Other,,,1160,758,0.740082876,0.732734273
+SY,Syrian Arab Republic,211,Syrian Arab Republic,Middle East,,,1715,758,1.094174252,0.732734273
+SZ,Swaziland,212,Swaziland,Africa,,,1614,758,1.029736002,0.732734273
+TC,Turks and Caicos Islands,213,Turks and Caicos Islands,Other,,,1160,758,0.740082876,0.732734273
+TD,Chad,214,Chad,Africa,,,1614,758,1.029736002,0.732734273
+TF,French Southern Territories,215,French Southern Territories,Other,,,1160,758,0.740082876,0.732734273
+TG,Togo,216,Togo,Africa,,,1614,758,1.029736002,0.732734273
+TH,Thailand,217,Thailand,Other Asia,,,1160,758,0.740082876,0.732734273
+TJ,Tajikistan,218,Tajikistan,Other,,,1160,758,0.740082876,0.732734273
+TK,Tokelau,219,Tokelau,Other,,,1160,758,0.740082876,0.732734273
+TL,Timor-Leste,220,Timor-Leste,Other Asia,,,1160,758,0.740082876,0.732734273
+TM,Turkmenistan,221,Turkmenistan,Other,,,1160,758,0.740082876,0.732734273
+TN,Tunisia,222,Tunisia,Africa,,,1614,758,1.029736002,0.732734273
+TO,Tonga,223,Tonga,Oceania,,,1610,758,1.027183992,0.732734273
+TR,Turkey,224,Turkey,Middle East,1434,715,1434,715,0.914895555,0.691167553
+TT,Trinidad and Tobago,225,Trinidad and Tobago,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+TV,Tuvalu,226,Tuvalu,Oceania,,,1610,758,1.027183992,0.732734273
+TW,"Taiwan, Province of China",227,"Taiwan, Province of China",China,,,986,671,0.629070445,0.648634165
+TZ,"Tanzania, United Republic of",228,"Tanzania, United Republic of",Africa,,,1614,758,1.029736002,0.732734273
+UA,Ukraine,229,Ukraine,Eurasia,,,1611,758,1.027821994,0.732734273
+UG,Uganda,230,Uganda,Africa,,,1614,758,1.029736002,0.732734273
+UM,United States Minor Outlying Islands,231,United States Minor Outlying Islands,Other,,,1160,758,0.740082876,0.732734273
+US,United States,232,United States,North America,1501,1109,1501,1109,0.957641722,1.072034708
+UY,Uruguay,233,Uruguay,Other South America,,,1563,758,0.997197875,0.732734273
+UZ,Uzbekistan,234,Uzbekistan,Other,,,1160,758,0.740082876,0.732734273
+VA,Holy See (Vatican City State),235,Holy See (Vatican City State),Europe,,,1583,758,1.009957925,0.732734273
+VC,Saint Vincent and the Grenadines,236,Saint Vincent and the Grenadines,Central America & the Caribbean,,,1757,758,1.120970356,0.732734273
+VE,Venezuela,237,Venezuela,Other South America,,,1563,758,0.997197875,0.732734273
+VG,"Virgin Islands, British",238,"Virgin Islands, British",Other,,,1160,758,0.740082876,0.732734273
+VI,"Virgin Islands, U.S.",239,"Virgin Islands, U.S.",Other,,,1160,758,0.740082876,0.732734273
+VN,Vietnam,240,Vietnam,Other Asia,,,1160,758,0.740082876,0.732734273
+VU,Vanuatu,241,Vanuatu,Oceania,,,1610,758,1.027183992,0.732734273
+WF,Wallis and Futuna,242,Wallis and Futuna,Other,,,1160,758,0.740082876,0.732734273
+WS,Samoa,243,Samoa,Oceania,,,1610,758,1.027183992,0.732734273
+XK,Kosovo (temporary code),244,Kosovo (temporary code),Europe,,,1583,758,1.009957925,0.732734273
+XX,#N/A,245,#N/A,Other,,,1160,758,0.740082876,0.732734273
+YE,Yemen,246,Yemen,Middle East,,,1715,758,1.094174252,0.732734273
+YT,Mayotte,247,Mayotte,Other,,,1160,758,0.740082876,0.732734273
+ZA,South Africa,248,South Africa,Africa,,1255,1614,1255,1.029736002,1.213168223
+ZM,Zambia,249,Zambia,Africa,,,1614,758,1.029736002,0.732734273
+ZW,Zimbabwe,250,Zimbabwe,Africa,,,1614,758,1.029736002,0.732734273
