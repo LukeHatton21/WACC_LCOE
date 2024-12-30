@@ -96,6 +96,27 @@ class Global_Data:
         #self.plot_data(countries_output) 
         
         return countries_output
+    
+    def get_countries_v2(self):
+        
+        # Specify latitude and longitudes
+        longitude = np.arange(-179.5, 180, 0.25)
+        latitude = np.arange(-89.5, 90, 0.25)
+        grid = xr.Dataset({"lon": lon, "lat": lat})
+
+        # Create a country mask
+        countries = regionmask.defined_regions.natural_earth_v5_0_0.countries_110
+        mask = countries.mask(grid)
+        
+        # Get country data
+        
+        
+        
+        # Extract metadata
+        
+        # Compare to existing mapping and make adjustments
+        
+        
 
     def get_offshore_onshore_mask(self, data):
 
