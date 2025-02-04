@@ -13,7 +13,7 @@ import scipy.stats as stats
 
 
 class CoCModel:
-    def __init__(self,running_folder, generation_data, crp_data, irena_waccs, aures_waccs, country_codes, aures_diacore, OECD_IR, IMF_IR, GDP, GDP_Change, collated_IR, electricity_prices, tax_data, irena_2022, rise_data, country_mapping):
+    def __init__(self,running_folder, generation_data, crp_data, irena_waccs, aures_waccs, country_codes, aures_diacore, OECD_IR, IMF_IR, GDP, collated_IR, electricity_prices, tax_data, irena_2022, rise_data, country_mapping):
         # Read in the input data - generation and CRPs
         self.generation_data = pd.read_csv(running_folder + generation_data)
         self.crp_data = pd.read_csv(running_folder + crp_data)
@@ -44,8 +44,6 @@ class CoCModel:
         # Read in GDP per capita
         self.GDP_data = pd.read_csv(running_folder + GDP)
         self.GDP_data.columns = self.GDP_data.columns.map(str)
-        self.GDP_change = pd.read_csv(running_folder + GDP_Change)
-        self.GDP_change.columns = self.GDP_change.columns.map(str)
         
         
         # Add ISO 2 and 3 Codes (if required)
@@ -274,16 +272,12 @@ class CoCModel:
         # Extract GDP data
         gdp_data = self.pull_GDP_data(year)
         
-        # Extract GDP data
-        gdp_change = self.pull_GDP_change(year)
-        
         # Extract Tax Rates
         tax_data = self.tax_data[['Country code', 'Tax_Rate']]
         
         # Merge all these data
         merged_df = pd.merge(crp_data, re_data, left_on="Country code", right_on="Country code", how="outer")
         merged_df = pd.merge(merged_df, gdp_data, left_on="Country code", right_on="Country code", how="outer")
-        merged_df = pd.merge(merged_df, gdp_change, left_on="Country code", right_on="Country code", how="outer")
         merged_df = pd.merge(merged_df, interest_rates, left_on="Country code", right_on="Country code", how="outer")
         merged_df = pd.merge(merged_df, tax_data, left_on="Country code", right_on="Country code", how="outer")
         
@@ -328,19 +322,6 @@ class CoCModel:
         
         
         return data_subset
-    
-    def pull_GDP_change(self, year):
-
-        
-        # Extract generation data
-        data = self.GDP_change
-        
-        # Extract specific year
-        data_subset = data[["Country code", year]]
-        data_subset = data_subset.rename(columns={year: "GDP_Change_"+year})
-        
-        
-        return data_subset
         
     def pull_generation_data_v2(self, year_str, technology):
 
@@ -379,7 +360,7 @@ class CoCModel:
         collated_data = collated_data.rename(columns={"Penetration_2021_Solar":"Solar_Penetration_2021", "Penetration_2021_Wind":"Wind_Penetration_2021", "Capacity_2021_Solar":"Solar_Capacity_2021", "Capacity_2021_Wind":"Wind_Capacity_2021"}) 
     
         # Extract meta data and merge with the chosen
-        merged_data = pd.merge(collated_solar[["Area", "Country code", "Continent", "GDP_2021", "GDP_Change_2021", "IR_2021", "CRP_2021", "Tax_Rate"]], collated_data[["Country code", "Wind_Capacity_2021", "Wind_Penetration_2021","Solar_Capacity_2021", "Solar_Penetration_2021"]], on="Country code", how="inner")
+        merged_data = pd.merge(collated_solar[["Area", "Country code", "Continent", "GDP_2021", "IR_2021", "CRP_2021", "Tax_Rate"]], collated_data[["Country code", "Wind_Capacity_2021", "Wind_Penetration_2021","Solar_Capacity_2021", "Solar_Penetration_2021"]], on="Country code", how="inner")
 
         
         # Pull the IRENA WACC data
@@ -621,7 +602,7 @@ class CoCModel:
         first_cols = ['Country', 'Country code', 'Continent']
         other_cols = np.sort(storage_dataframe.columns.difference(first_cols)).tolist()
         storage_dataframe = storage_dataframe.loc[:, first_cols+other_cols]
-        storage_dataframe = storage_dataframe.drop(columns={"Country", "Area", "Electricity_Price", "GDP_2021", "GDP_Change_2021"})
+        storage_dataframe = storage_dataframe.drop(columns={"Country", "Area", "Electricity_Price", "GDP_2021"})
         storage_dataframe = storage_dataframe.dropna(subset={"CRP_"+year})
         extracted_data = storage_dataframe[["Country Name", "Country code", "index", "Tax_Rate", "CRP_" + year, "CRP_2021", 'IR_Change_'+year + '_2021', "Debt_Share_" + year, "Debt_Share_2021", "Onshore_Wind_WACC_" + year,  "Onshore_Wind_WACC_2021","Solar_WACC_" + year, "Solar_WACC_2021",  "Wind_Cost_Debt_" + year, "Wind_Cost_Equity_" + year, "Wind_Common_Risk_" + year, "Wind_Cost_Debt_2021", "Wind_Cost_Equity_2021", "Wind_Common_Risk_2021", "Wind_Penetration_" + year, "Wind_Penetration_2021", "Delta_Wind", "Error_Wind", "Solar_Cost_Debt_" + year, "Solar_Cost_Equity_" + year, "Solar_Common_Risk_" + year, "Solar_Cost_Debt_2021", "Solar_Cost_Equity_2021","Solar_Common_Risk_2021", "Solar_Penetration_" + year, "Solar_Penetration_2021", "Intercept_Solar_"+year, "Delta_Solar", "Error_Solar"]]
         
@@ -895,6 +876,9 @@ class CoCModel:
             rf_rate = interest_rate
         else:
             rf_rate =  US_IR[year].values[0]
+            
+        # Store rf_rate
+        self.rf_rate = rf_rate
 
         # Risk free rate change
         rf_change = rf_rate - rf_rate_2021
@@ -915,13 +899,25 @@ class CoCModel:
         # Add in estimated for offshore wind
         offshore_wind_premium = 1.73333
         extracted_data['Offshore_Wind_WACC_' + year] = extracted_data['Onshore_Wind_WACC_' + year] + offshore_wind_premium
+        extracted_data['Offshore_Wind_WACC_LB_' + year] = extracted_data['Onshore_Wind_WACC_LB_' + year] + offshore_wind_premium
+        extracted_data['Offshore_Wind_WACC_UB_' + year] = extracted_data['Onshore_Wind_WACC_UB_' + year] + offshore_wind_premium
 
         # Extract waccs for onshore, offshore and solar PV
         estimated_country_waccs = pd.merge(self.country_mapping, extracted_data[['Country code', 'Onshore_Wind_WACC_' + year, 'Offshore_Wind_WACC_' + year, "Solar_WACC_" + year]], how="left", on="Country code")
         estimated_country_waccs = estimated_country_waccs.rename(columns={"Onshore_Wind_WACC_" + year: "onshore_wacc", "Solar_WACC_" + year: "solar_pv_wacc", "Offshore_Wind_WACC_" + year: "offshore_wacc"})
         
+        
+        # Extract lower bound
+        country_waccs_lb = pd.merge(self.country_mapping, extracted_data[['Country code', 'Onshore_Wind_WACC_LB_' + year, 'Offshore_Wind_WACC_LB_' + year, "Solar_WACC_LB_" + year]], how="left", on="Country code")
+        country_waccs_lb = country_waccs_lb.rename(columns={"Onshore_Wind_WACC_LB_" + year: "onshore_wacc", "Solar_WACC_LB_" + year: "solar_pv_wacc", "Offshore_Wind_WACC_LB_" + year: "offshore_wacc"})
+        
+        # Extract upper bound
+        country_waccs_ub = pd.merge(self.country_mapping, extracted_data[['Country code', 'Onshore_Wind_WACC_UB_' + year, 'Offshore_Wind_WACC_UB_' + year, "Solar_WACC_UB_" + year]], how="left", on="Country code")
+        country_waccs_ub = country_waccs_ub.rename(columns={"Onshore_Wind_WACC_UB_" + year: "onshore_wacc", "Solar_WACC_UB_" + year: "solar_pv_wacc", "Offshore_Wind_WACC_UB_" + year: "offshore_wacc"})
+        
+        
 
-        return extracted_data, estimated_country_waccs
+        return extracted_data, estimated_country_waccs, country_waccs_lb, country_waccs_ub
 
 
     

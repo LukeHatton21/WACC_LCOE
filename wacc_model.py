@@ -27,7 +27,7 @@ from postprocessor_v1 import PostProcessor
 warnings.filterwarnings("ignore")
 
 class WaccEstimator:
-    def __init__(self, data_path, country_grids, electricity_prices, solar_results, wind_results, capex_mapping, generation_data, crp_data, irena_waccs, aures_waccs, country_codes, aures_diacore, OECD_IR, IMF_IR, GDP, collated_IR, tax_data, irena_2022, rise_data, country_mapping, economic_parameters, output_folder, land_cover, land_mapping, TIAM_regions, uniform_factor, solar_cf, wind_cf):     
+    def __init__(self, data_path, country_grids, electricity_prices, solar_results, wind_results, capex_mapping, generation_data, crp_data, irena_waccs, aures_waccs, country_codes, aures_diacore, OECD_IR, IMF_IR, GDP, collated_IR, tax_data, irena_2022, rise_data, country_mapping, economic_parameters, output_folder, land_cover, land_mapping, TIAM_regions, solar_cf, wind_cf, nominal):     
         """ Initialises the WaccEstimator class, which can be used to calculate the WACC required to reach a specified price on a geospatial basis
         
        
@@ -114,17 +114,20 @@ class WaccEstimator:
         self.geodata_class = Global_Data((data_path + "ETOPO_bathymetry.nc"),(data_path+"distance2shore.nc"), (data_path+"country_grids.nc"), self.wind_input)
         self.geodata = self.geodata_class.get_countries_in_required_resolution()
         self.offshore_mask = self.geodata_class.get_offshore_mask() 
-        
-        # Set uniform global factor
-        self.uniform_factor = uniform_factor
+     
         
         # Get uniform_factors from UNFCCC countries
         self.solar_pv_uf, self.onshore_uf, self.offshore_uf = self.get_unfccc_II_average()
+        if nominal is not None:
+            self.solar_uf_nom = self.convert_to_nominal(self.solar_pv_uf, nominal)
+            self.onshore_uf_nom = self.convert_to_nominal(self.onshore_uf, nominal)
+            self.offshore_uf_nom = self.convert_to_nominal(self.offshore_uf, nominal)
+        
     
         # Calculate LCOE using predicted WACCs and regional costs, alongside a uniform calculation
-        self.solar_lcoe = self.calculate_lcoe_v4(self.solar_processed, technology="Solar", uniform_factor=self.solar_pv_uf)
-        self.wind_lcoe = self.calculate_lcoe_v4(self.wind_onshore, technology="Onshore Wind", uniform_factor=self.onshore_uf)
-        self.offshore_lcoe = self.calculate_lcoe_v4(self.wind_offshore, technology="Offshore Wind", uniform_factor=self.offshore_uf)
+        self.solar_lcoe = self.calculate_lcoe_v4(self.solar_processed, technology="Solar", uniform_factor=self.solar_pv_uf, nominal=nominal)
+        self.wind_lcoe = self.calculate_lcoe_v4(self.wind_onshore, technology="Onshore Wind", uniform_factor=self.onshore_uf, nominal=nominal)
+        self.offshore_lcoe = self.calculate_lcoe_v4(self.wind_offshore, technology="Offshore Wind", uniform_factor=self.offshore_uf, nominal=nominal)
         
         # Merge TIAM and Country coding
         self.TIAM_regions = pd.merge(self.country_mapping, self.TIAM_regions, how="left", on="Country code") 
@@ -132,7 +135,7 @@ class WaccEstimator:
         # Initialise PostProcessor object
         self.land_cover = xr.open_dataset(data_path + land_cover)
         self.land_mapping = pd.read_csv(data_path + land_mapping)
-        self.postprocessor = PostProcessor(output_folder, self.solar_lcoe, self.wind_lcoe, self.offshore_lcoe, self.CoCModel_class.GDP_data, self.land_cover, self.land_mapping, self.country_grids, self.TIAM_regions, self.country_mapping, self.solar_cf, self.wind_cf)
+        self.postprocessor = PostProcessor(output_folder, self.solar_lcoe, self.wind_lcoe, self.offshore_lcoe, self.CoCModel_class.GDP_data, self.land_cover, self.land_mapping, self.country_grids, self.TIAM_regions, self.country_mapping, self.solar_cf, self.wind_cf, self.country_wacc_mapping)
 
         
     def get_unfccc_II_average(self):
@@ -175,9 +178,11 @@ class WaccEstimator:
     
     def process_inputs(self):
         
+        
         # Set up latitudes and longitudes for reindexing
-        latitudes= np.arange(-65, 85, 0.5)
-        longitudes = np.arange(-180, 179.375, 0.625)
+        latitudes= np.arange(-60, 85.5, 0.5)
+        longitudes = np.arange(-180, 180.625, 0.625)
+       
         
         # Reindex results and country mapping
         solar_results = self.solar_input.reindex({"latitude":latitudes, "longitude":longitudes}, method="nearest")
@@ -198,10 +203,6 @@ class WaccEstimator:
         # Calculate annual electricity production from CFs, in kWh per annum
         solar_results['electricity_production'] = solar_results['CF'] * 8760 * self.renewables_capacity
         wind_results['electricity_production'] = wind_results['CF'] * 8760 * self.renewables_capacity
-        
-        # Apply constraints
-        solar_results['electricity_production'] = xr.where(solar_results['CF']<0.1, np.nan, solar_results['electricity_production'])
-        wind_results['electricity_production'] = xr.where(wind_results['CF']<0.18, np.nan, wind_results['electricity_production'])
         
         # Store Size
         solar_results['capacity'] = self.renewables_capacity
@@ -748,7 +749,7 @@ data_path = "/Users/lukehatton/Documents/Imperial PhD/Analysis/LCOE & WACC Model
 output_folder = "/Users/lukehatton/Documents/Imperial PhD/Analysis/LCOE & WACC Model/MANUSCRIPT_PLOTS/"
 
 # Call the WACC Estimator function
-wacc_model = WaccEstimator(data_path = data_path, country_grids = "country_grids.nc", electricity_prices="CountryElecPrices.csv", solar_results = "SOLAR_CF_MEAN.2022.nc", wind_results ="WIND_CF_MEAN.2022.nc", capex_mapping= "IRENA_Country_Costs_NEW.csv", generation_data = "Ember Yearly Data 2023.csv", crp_data = "CRPs.csv", irena_waccs = "IRENA_WACCs.csv", aures_waccs = "Aures_Data.csv", country_codes = "CountryCoding.csv", aures_diacore="Aures&DiacoreData.csv", OECD_IR = "OECD_IR.csv", IMF_IR = "IMF_IR.csv", GDP="GDPPerCapita.csv", collated_IR="Collated_IR.csv", tax_data="TaxData.csv", irena_2022 = "IRENA_CoD_CoE.csv", rise_data="RISE_Data.csv", country_mapping = "country_mapping.csv", economic_parameters = "economic_parameters.csv", output_folder = output_folder, land_cover="GlobalLandCover.nc", land_mapping = "LandUseCSV.csv", TIAM_regions="TIAM_Regions.csv", uniform_factor=4.9, solar_cf="SOLAR_CF_MEAN.2022.nc", wind_cf="WIND_CF_MEAN.2022.nc")
+wacc_model = WaccEstimator(data_path = data_path, country_grids = "country_grids.nc", electricity_prices="CountryElecPrices.csv", solar_results = "SOLAR_CF_MEAN.2022.nc", wind_results ="WIND_CF_MEAN.2022.nc", capex_mapping= "IRENA_Country_Costs_NEW.csv", generation_data = "Ember Yearly Data 2023.csv", crp_data = "CRPs.csv", irena_waccs = "IRENA_WACCs.csv", aures_waccs = "Aures_Data.csv", country_codes = "CountryCoding.csv", aures_diacore="Aures&DiacoreData.csv", OECD_IR = "OECD_IR.csv", IMF_IR = "IMF_IR.csv", GDP="GDPPerCapita.csv", collated_IR="Collated_IR.csv", tax_data="TaxData.csv", irena_2022 = "IRENA_CoD_CoE.csv", rise_data="RISE_Data.csv", country_mapping = "country_mapping.csv", economic_parameters = "economic_parameters.csv", output_folder = output_folder, land_cover="GlobalLandCover.nc", land_mapping = "LandUseCSV.csv", TIAM_regions="TIAM_Regions.csv", solar_cf="SOLAR_CF_MEAN.2022.nc", wind_cf="WIND_CF_MEAN.2022.nc", nominal=0.03)
 
 # Extract solar and wind results
 solar_results = wacc_model.solar_lcoe
@@ -782,7 +783,12 @@ if plot_wacc_supply == "Yes":
 # Create WACC visualisation
 plot_wacc_values = input("Plot WACC visualisations? Yes/No")
 if plot_wacc_values == "Yes":
-    wacc_model.postprocessor.plot_wacc_values(wacc_model.geodata)               
+    wacc_model.postprocessor.plot_wacc_values(wacc_model.geodata) 
+    
+# Create LCOE-Supply Curves visualisation
+plot_lcoe_values = input("Plot LCOE-Supply visualisations? Yes/No")
+if plot_lcoe_values == "Yes":
+    wacc_model.postprocessor.run_TIAM_regions(wacc_model.solar_uf_nom*100, wacc_model.onshore_uf_nom*100, wacc_model.offshore_uf_nom*100)
                                 
     
 

@@ -1,4 +1,4 @@
-def get_system_costs(wacc_model, benchmark_lcoe, technology):
+ def get_system_costs(wacc_model, benchmark_lcoe, technology):
 
     # Create a storage array
     system_costs = xr.full_like(wacc_model.land_mapping, np.nan)
@@ -1604,3 +1604,1036 @@ wacc_model.plot_data_shading(solar_plot_waccs,solar_plot_waccs.latitude, solar_p
 wacc_model.plot_data_shading(onshore_plot_waccs, onshore_plot_waccs.latitude, onshore_plot_waccs.longitude, tick_values = [0, 5, 10, 15, 20], title="Estimated\nWACC\n (%, real,\nafter tax)\n", cmap="YlGnBu", extend_set="neither", filename = output_folder + "Wind_WACC_2023", graphmarking="b")
 
 wacc_model.plot_data_shading(offshore_plot_waccs, offshore_plot_waccs.latitude, offshore_plot_waccs.longitude, tick_values = [0, 5, 10, 15, 20], title="Estimated\nWACC\n (%, real,\nafter tax)\n", cmap="YlGnBu", extend_set="neither", filename = output_folder + "Offshore_Wind_WACC_2023", graphmarking="c")
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+def get_utilisations(land_cover, land_mapping, annual_production, technology):
+
+    latitudes = annual_production.latitude.values
+    longitudes = annual_production.longitude.values
+    global_cover = land_cover.reindex_like(annual_production, method="nearest")
+    mapping = land_mapping
+
+    utilisation = xr.zeros_like(global_cover['cover'])
+    for i in np.arange(0, 21, 1):
+        # Use xarray's where and isin functions to map land use categories to values
+        if technology == "Solar":
+            utilisation = xr.where(global_cover['cover'] == mapping['Number'].iloc[i], mapping['PV LU'].iloc[i], utilisation)
+        elif technology =="Wind":
+            utilisation = xr.where(global_cover['cover'] == mapping['Number'].iloc[i], mapping['Wind LU'].iloc[i], utilisation)   
+
+    return utilisation    
+
+
+def get_areas(annual_production):
+
+    latitudes = annual_production.latitude.values
+    longitudes = annual_production.longitude.values
+
+    # Add an extra value to latitude and longitude coordinates
+    latitudes_extended = np.append(latitudes, latitudes[-1] + np.diff(latitudes)[-1])
+    longitudes_extended = np.append(longitudes, longitudes[-1] + np.diff(longitudes)[-1])
+
+    # Calculate the differences between consecutive latitude and longitude points
+    dlat_extended = np.diff(latitudes_extended)
+    dlon_extended = np.diff(longitudes_extended)
+
+    # Calculate the Earth's radius in kms
+    radius = 6371
+
+    # Compute the mean latitude value for each grid cell
+    mean_latitudes_extended = (latitudes_extended[:-1] + latitudes_extended[1:]) / 2
+    mean_latitudes_2d = mean_latitudes_extended[:, np.newaxis]
+
+    # Convert the latitude differences and longitude differences from degrees to radians
+    dlat_rad_extended = np.radians(dlat_extended)
+    dlon_rad_extended = np.radians(dlon_extended)
+
+    # Compute the area of each grid cell using the Haversine formula
+    areas_extended = np.outer(dlat_rad_extended, dlon_rad_extended) * (radius ** 2) * np.cos(np.radians(mean_latitudes_2d))
+
+    # Create a dataset with the three possible capital expenditures 
+    area_dataset = xr.Dataset()
+    area_dataset['latitude'] = latitudes
+    area_dataset['longitude'] = longitudes
+    area_dataset['area'] = (['latitude', 'longitude'], areas_extended, {'latitude': latitudes, 'longitude': longitudes})
+
+    return area_dataset
+
+
+
+def get_supply_curves_v2(data, land_cover, land_mapping, technology, country_grids):
+    
+    # Extract required parameters
+    annual_production = data['electricity_production']
+    latitudes = annual_production.latitude.values
+    longitudes = annual_production.longitude.values
+    
+    # Get area and utilisations
+    grid_areas = get_areas(annual_production)
+    utilisation_factors = get_utilisations(land_cover, land_mapping, annual_production, technology)
+    
+    # Set out constants
+    if technology == "Wind":
+        power_density = 6520 # kW/km2
+    elif technology == "Solar":
+        power_density = 32950  # kW/km2
+    installed_capacity = 1000
+    
+    # Scale annual electricity production by power density
+    max_installed_capacity = power_density * grid_areas['area'] * utilisation_factors
+    ratios = max_installed_capacity / installed_capacity
+    technical_potential = annual_production * ratios
+    
+    # Include additional data into the dataset
+    data['technical_potential'] = technical_potential
+    data['country'] = country_grids['country']
+    
+    return data
+
+def produce_wacc_potential_curve_v2(supply_ds, GDP_country_mapping, filename=None, graphmarking=None, title=None, xlim=None):
+    
+    # Convert the dataset into a dataframe
+    supply_df = supply_ds.to_dataframe()
+    
+    # Remove locations not evaluated
+    supply_df = supply_df.dropna(axis="index")
+    
+    # Create two copies
+    uniform_df = supply_ds.to_dataframe().dropna(subset="Uniform_LCOE")
+    wacc_df = supply_ds.to_dataframe().dropna(subset="Calculated_LCOE")
+    
+    # For the Country WACC case, sort values and calculate cumulative sum
+    supply_df = supply_df.round({'Estimated_WACC': 3})
+    supply_df = supply_df.sort_values(by=['Estimated_WACC'], ascending=True)
+    supply_df['cumulative_potential'] = supply_df['technical_potential'].cumsum()
+    
+    # For the WACC case, sort values and calculate cumulative sum
+    wacc_df = wacc_df.sort_values(by=['Calculated_LCOE'], ascending=True)
+    wacc_df['cumulative_wacc'] = wacc_df['technical_potential'].cumsum()
+    
+    # For the Uniform WACC case, sort values and calculate cumulative sum
+    uniform_df = uniform_df.sort_values(by=['Uniform_LCOE'], ascending=True)
+    uniform_df['cumulative_uniform'] = uniform_df['technical_potential'].cumsum()
+    
+    # Plot test checker
+    plt.plot(wacc_df['cumulative_wacc'], wacc_df['Calculated_LCOE'])
+    plt.plot(uniform_df['cumulative_uniform'], uniform_df['Uniform_LCOE'])
+    plt.ylim(0, 0.25)
+
+
+    # Plot the results
+    fig, ax = plt.subplots(figsize=(20, 8))
+    color_labels = {}
+    cmap = mpl.colormaps['gnuplot_r']
+    norm = mpl.colors.Normalize(vmin=0, vmax=50000)  # Normalize to the range of GDP
+
+
+    # Iterate through each data point and create a bar with the specified width
+    for index, row in supply_df.iterrows():
+        width = row['technical_potential'] / 1e+09  # Bar width, in TWh
+        height = row['Estimated_WACC']  # Bar height
+        country = row['country']
+        cumulative_production = row['cumulative_potential'] / 1e+09  # Cumulative production, in TWh
+
+        # Get GDP per capita 
+        if np.isnan(country):
+            gdp_per_capita = np.nan
+        else:
+            gdp_per_capita = GDP_country_mapping.loc[GDP_country_mapping['index'] == country, '2022'].values[0]
+        color = cmap(norm(gdp_per_capita))
+
+        # Plot a bar with the specified width, height, x-position, and color
+        ax.bar(cumulative_production, height, width=-1 * width, align='edge', color=color)
+
+
+    def thousands_format(x, pos):
+        return f'{int(x):,}'
+
+    # Set labels
+    ax.set_xlim(0, xlim)
+    ax.set_ylim(0, 25)
+    ax.set_ylabel('WACC (%)', fontsize=20)
+    ax.set_xlabel('Annual Electricity Potential (TWh/year)', fontsize=25)
+    ax.set_title(title, fontsize=30)
+    ax.xaxis.set_major_formatter(FuncFormatter(thousands_format))
+
+    # Set the size of x and y-axis tick labels
+    ax.tick_params(axis='x', labelsize=20)  # Adjust the labelsize as needed
+    ax.tick_params(axis='y', labelsize=20)  # Adjust the labelsize as needed
+
+    # Add color bar
+    cbar = plt.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, ticks=[0, 5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000, 450000,50000], format=',', extend="max", anchor=(0.25, 0.5))
+    cbar.ax.yaxis.set_major_formatter(FuncFormatter(thousands_format))
+    cbar.set_label('GDP per capita (USD, 2022)', fontsize=20)
+    cbar.ax.tick_params(labelsize=15)
+
+
+    # Plot second axis
+    # Create a twin Y-axis on the same figure
+    ax2 = ax.twinx()
+
+    # Plot lines on the twin Y-axis (this axis is independent of the main y-axis)
+    ax2.plot(wacc_df['cumulative_wacc']/1e+9, wacc_df['Calculated_LCOE']*1000, color='blue', lw=2.5, label='LCOE under Country-level WACC', linestyle="--")
+    ax2.plot(uniform_df['cumulative_uniform']/1e+9, uniform_df['Uniform_LCOE']*1000, color='red', lw=2.5, label='LCOE under Uniform 7% WACC', linestyle="--")
+
+    # Customize the second y-axis
+    ax2.set_ylabel('Levelised Cost (USD/MWh)', fontsize=20)
+    ax2.legend(loc='upper center', fontsize=20)
+    ax2.tick_params(axis="y", labelsize=20)
+    ax2.set_ylim(0, 250)
+
+    if graphmarking is not None:
+        ax.text(0.02, 0.94, graphmarking, transform=ax.transAxes, fontsize=20, fontweight='bold')
+
+    if filename is not None:
+        plt.savefig(filename + ".png", bbox_inches="tight")
+
+    plt.show()
+
+
+
+
+GDP = pd.read_csv("./DATA/GDPPerCapita.csv")[['Country code', '2022']]
+GDP_country_mapping = pd.merge(country_mapping, GDP, on="Country code", how="left")
+solar_ds = get_supply_curves_v2(solar_results, land_cover, land_mapping, "Solar", country_grids)
+produce_wacc_potential_curve_v2(solar_ds, GDP_country_mapping)
+
+
+solar_df = solar_results.to_dataframe()
+solar_df = solar_df.dropna(subset="Calculated_LCOE")
+solar_df = solar_df.sort_values(by="Calculated_LCOE", ascending=True)
+solar_df['cumulative_production'] = solar_df['technical_potential'].cumsum()
+plt.plot(solar_df['cumulative_production'], solar_df['Calculated_LCOE'])
+
+uniform_df = uniform_df.dropna(subset="Uniform_LCOE")
+uniform_df = uniform_df.sort_values(by="Uniform_LCOE", ascending=True)
+uniform_df['cumulative_uniform'] = uniform_df['technical_potential'].cumsum()
+plt.plot(uniform_df['cumulative_uniform'], uniform_df['Uniform_LCOE'])
+plt.ylim(0, 0.25)
+
+wind_ds = get_supply_curves_v2(wind_results, land_cover, land_mapping, "Wind", country_grids)
+produce_wacc_potential_curve_v2(wind_ds, GDP_country_mapping)
+                           
+                            
+def get_concessionality_v3(wacc_model, data, concessional_rate, technology, risk_reductions):
+    
+    def reduce_30_percent(data, rf_rate, risk_reductions):
+        
+        # Further modify 'WACC_2023' only for the rows in the mask
+        data.loc[data['Debt_Share_2023'] < 80, 'Debt_Cost_2023'] = (data.loc[data['Debt_Share_2023'] < 80, 'Debt_Cost_2023'] - rf_rate) * ((100 - risk_reductions) / 100) + rf_rate
+        data.loc[data['Debt_Share_2023'] < 80, 'Equity_Cost_2023'] = (data.loc[data['Debt_Share_2023'] < 80, 'Equity_Cost_2023'] - rf_rate) * ((100 - risk_reductions) / 100) + rf_rate
+        
+        return data
+    
+    
+    # Convert data in netcdf to pandas dataframe
+    merged_dataset = xr.Dataset({
+    "Required_WACC": data,
+    "index": wacc_model.land_grids
+})
+    working_dataframe = merged_dataset.to_dataframe().reset_index()
+    
+    # Import the existing costs of commercial debt, equity and the modelled debt share
+    if technology == "Wind":
+        financing_values = wacc_model.calculated_data[['Country code', 'index', 'Debt_Share_2023', 'Onshore_Wind_WACC_2023', 'Onshore_Wind_Cost_Debt_2023', 'Onshore_Wind_Cost_Equity_2023', 'Tax_Rate']].rename(columns={"Onshore_Wind_WACC_2023":"WACC_2023", "Onshore_Wind_Cost_Debt_2023": "Debt_Cost_2023", "Onshore_Wind_Cost_Equity_2023":"Equity_Cost_2023"})
+    elif technology == "Solar":
+        financing_values = wacc_model.calculated_data[['Country code', 'index', 'Debt_Share_2023', 'Solar_WACC_2023', 'Solar_Cost_Debt_2023', 'Solar_Cost_Equity_2023', 'Tax_Rate']].rename(columns={"Solar_WACC_2023":"WACC_2023", "Solar_Cost_Debt_2023": "Debt_Cost_2023", "Solar_Cost_Equity_2023":"Equity_Cost_2023"})
+    financing_terms = pd.merge(working_dataframe, financing_values, how="left", on="index") 
+    
+    # Reduce the overall cost of capital by 30% for developing countries
+    financing_terms = reduce_30_percent(financing_terms, 3.96, risk_reductions)
+    
+    
+    # Calculate debt-equity ratio
+    financing_terms['Equity_Share_2023'] = (100 - financing_terms['Debt_Share_2023']) 
+    financing_terms['Debt_Equity_Ratio'] =  financing_terms['Debt_Share_2023'] / financing_terms['Equity_Share_2023']
+    
+    # Set the cost of concessional financing 
+    financing_terms['Concessional_Cost_2023'] = concessional_rate 
+    
+    
+    # Calculate the share of concessional financing / commercial debt / commercial equity
+    numerator =  (financing_terms['Debt_Equity_Ratio'] + 1) * financing_terms['Required_WACC'] - financing_terms['Debt_Cost_2023'] * financing_terms['Debt_Equity_Ratio'] * (1 - financing_terms['Tax_Rate']/100) - financing_terms['Equity_Cost_2023']
+    denominator = ((financing_terms['Debt_Equity_Ratio'] + 1) * financing_terms['Concessional_Cost_2023'] * (1 - financing_terms['Tax_Rate']/100) - financing_terms['Equity_Cost_2023'] - financing_terms['Debt_Cost_2023'] * (1 - financing_terms['Tax_Rate']/100) * financing_terms['Debt_Equity_Ratio'])
+    financing_terms['Concessional_Debt_Share'] = numerator / denominator
+    financing_terms['Commercial_Equity_Share'] = (1 - financing_terms['Concessional_Debt_Share']) / (financing_terms['Debt_Equity_Ratio'] + 1) 
+    financing_terms['Commercial_Debt_Share'] = 1 - financing_terms['Concessional_Debt_Share'] - financing_terms['Commercial_Equity_Share'] 
+    
+    # Calculate shares of final
+    financing_terms['Equity_Contribution'] = financing_terms['Commercial_Equity_Share'] * (financing_terms['Equity_Cost_2023'])
+    financing_terms['Debt_Contribution'] = financing_terms['Commercial_Debt_Share'] * (financing_terms['Debt_Cost_2023'] * (1 - financing_terms['Tax_Rate']/100) ) 
+    financing_terms['Concessional_Contribution'] = financing_terms['Concessional_Debt_Share'] * financing_terms['Concessional_Cost_2023'] * (1 - financing_terms['Tax_Rate']/100)
+    financing_terms['Concessionality'] = financing_terms['Debt_Cost_2023'] - financing_terms['Concessional_Cost_2023']
+    
+    # Create a check
+    financing_terms['Total_Check'] =  financing_terms['Concessional_Debt_Share'] + financing_terms['Commercial_Debt_Share'] + financing_terms['Commercial_Equity_Share']
+    financing_terms['WACC_Concessional'] =  financing_terms['Equity_Contribution'] + financing_terms['Debt_Contribution'] + financing_terms['Concessional_Contribution']
+    
+    # Address inequalities
+    financing_terms['Concessional_Debt_Share'] = financing_terms['Concessional_Debt_Share'] * 100
+    financing_terms.loc[financing_terms['Required_WACC'] == 999, "Concessional_Debt_Share"] = 999
+    financing_terms.loc[financing_terms['Required_WACC'] == 111, "Concessional_Debt_Share"] = 111
+    financing_terms.loc[financing_terms['Required_WACC'] < concessional_rate, "Concessional_Debt_Share"] = 999
+    financing_terms.loc[financing_terms['Required_WACC'] < concessional_rate, "Commercial_Equity_Share"] = 999
+    financing_terms.loc[financing_terms['Required_WACC'] < concessional_rate, "Commercial_Debt_Share"] = 999
+    
+    # Convert back to netcdf
+    financing_terms = financing_terms.set_index(["latitude", "longitude"])
+    processed_data = financing_terms.to_xarray()
+    
+    return financing_terms, processed_data    
+
+def calculate_required_waccs(wacc_model, data, lcoe=None):
+
+    # Drop existing data
+    data = data.drop_vars('Required_WACC', errors="ignore")
+
+    # Convert LCOE to USD/kWh
+    lcoe = lcoe / 1000
+
+    # Extract key figures from the data
+    latitudes = data.latitude.values
+    longitudes = data.longitude.values
+    annual_electricity_production = data['electricity_production'] # kWh for 1 MW
+    initial_lcoe = data['Calculated_LCOE'] # USD/KWh for 1 MW
+
+    # Calculate annual costs
+    annual_costs = data['Calculated_OPEX'] # USD/kW/year
+    capital_costs = data['Calculated_CAPEX'] # USD for 1 MW
+
+
+    # Get LCOE 
+    if lcoe is None:
+        lcoe = xr.where(np.isnan(initial_lcoe), np.nan, lcoe)
+        data['Benchmark_LCOE'] = lcoe
+    else:
+        data['Benchmark_LCOE'] = xr.full_like(data['Calculated_CAPEX'], lcoe)
+
+    # Calculate discount factor at each location
+    # Ensure that the denominator is not zero or negative
+    valid_mask = (annual_electricity_production * lcoe - annual_costs) > 0
+
+    # Apply the calculation only where valid
+    discount_factor = xr.where(
+        np.isnan(lcoe) | ~valid_mask,
+        np.nan,
+        capital_costs / ((annual_electricity_production * lcoe) - annual_costs)
+    )
+
+    data['Discount_Factor'] = discount_factor
+
+    # Create array of discount factor to WACC values and round discount factor
+    discount_rates = np.linspace(0, 0.5, 1001)
+    discount_factors_array = wacc_model.calculate_discount_factor_v1(discount_rates)
+    xdata = discount_rates
+    ydata = discount_factors_array
+
+    # Calculate curve fit
+    ylog_data = np.log(ydata)
+    curve_fit = np.polyfit(xdata, ylog_data, 2)
+    y = np.exp(curve_fit[2]) * np.exp(curve_fit[1]*xdata) * np.exp(curve_fit[0]*xdata**2)
+
+
+    # Create interpolator
+    interpolator = interp1d(ydata, xdata, kind='nearest', bounds_error=False, fill_value=(0.5, 9.99))
+
+    # Use rounded discount factors to calculate WACC values 
+    estimated_waccs = interpolator(discount_factor)*100
+    estimated_waccs = xr.where(discount_factor < 0, 999, estimated_waccs)
+    estimated_waccs = xr.where(discount_factor < 0, np.nan, estimated_waccs)
+    wacc_da = xr.DataArray(estimated_waccs, coords={"latitude": latitudes, "longitude":longitudes})
+    data['Benchmark_WACC'] = xr.where(np.isnan(initial_lcoe)==True, np.nan, wacc_da)
+
+    return data
+
+def calculate_concessional_needs(wacc_model, concessional_rate, risk_reductions, solar_benchmark, wind_benchmark):
+    
+    # Calculate the required WACC to reach the benchmark
+    solar_benchmark_results = calculate_required_waccs(wacc_model, wacc_model.solar_results, lcoe = solar_benchmark)
+    wind_benchmark_results = calculate_required_waccs(wacc_model, wacc_model.wind_results, lcoe = wind_benchmark)
+
+    # Extract WACC
+    solar_benchmark_wacc = solar_benchmark_results['Benchmark_WACC']
+    wind_benchmark_wacc = wind_benchmark_results['Benchmark_WACC']
+    
+    # Calculate the fall in WACC required
+    wacc_concessional_solar = xr.where(solar_benchmark_results['Calculated_LCOE'] < solar_benchmark, 111, solar_benchmark_wacc)
+    wacc_concessional_wind = xr.where(wind_benchmark_results['Calculated_LCOE'] < wind_benchmark, 111, wind_benchmark_wacc)
+    
+    # Call the concessional finance function to calculate concessionality
+    concessional_calcs, processed_data_solar = get_concessionality_v3(wacc_model, wacc_concessional_solar, concessional_rate, "Solar", risk_reductions)
+    concessional_calcs, processed_data_wind = get_concessionality_v3(wacc_model, wacc_concessional_wind, concessional_rate, "Wind", risk_reductions)
+    
+    return processed_data_solar, processed_data_wind
+
+processed_data_solar, processed_data_wind = calculate_concessional_needs(wacc_model, concessional_rate=1, risk_reductions=30, solar_benchmark=60, wind_benchmark=49.5)
+wacc_model.plot_data_shading(processed_data_solar['Concessional_Debt_Share'], processed_data_solar.latitude, processed_data_solar.longitude, special_value = 999, hatch_label = "Unable to reach\nunder US$60/MWh", special_value_2 = 111, hatch_label_2="Already below\nUS$60/MWh\nat current WACCs", tick_values = [0, 25, 50, 75, 100], cmap="YlOrRd", title="Required\nShare Of\nConcessional\nFinancing (%)\n", graphmarking="a", extend_set="neither", filename="Solar_Concessional_30_RR")
+wacc_model.plot_data_shading(processed_data_wind['Concessional_Debt_Share'], processed_data_wind.latitude, processed_data_wind.longitude, special_value = 999, hatch_label = "Unable to reach\nunder US$49.5/MWh", special_value_2 = 111, hatch_label_2="Already below\nUS$49.5/MWh\nat current WACCs", tick_values = [0, 25, 50, 75, 100], cmap="YlGnBu", title="Required\nShare Of\nConcessional\nFinancing (%)\n", graphmarking="b", extend_set="neither", filename="Wind_Concessional_30_RR")
+
+
+processed_data_solar, processed_data_wind = calculate_concessional_needs(wacc_model, concessional_rate=1, risk_reductions=0, solar_benchmark=60, wind_benchmark=49.5)
+wacc_model.plot_data_shading(processed_data_solar['Concessional_Debt_Share'], processed_data_solar.latitude, processed_data_solar.longitude, special_value = 999, hatch_label = "Unable to reach\nunder US$60/MWh", special_value_2 = 111, hatch_label_2="Already below\nUS$60/MWh\nat current WACCs", tick_values = [0, 25, 50, 75, 100], cmap="YlOrRd", title="Required\nShare Of\nConcessional\nFinancing (%)\n", graphmarking="a", extend_set="neither", filename="Solar_Concessional_0_RR")
+wacc_model.plot_data_shading(processed_data_wind['Concessional_Debt_Share'], processed_data_wind.latitude, processed_data_wind.longitude, special_value = 999, hatch_label = "Unable to reach\nunder US$49.5/MWh", special_value_2 = 111, hatch_label_2="Already below\nUS$49.5/MWh\nat current WACCs", tick_values = [0, 25, 50, 75, 100], cmap="YlGnBu", title="Required\nShare Of\nConcessional\nFinancing (%)\n", graphmarking="b", extend_set="neither", filename="Wind_Concessional_0_RR") 
+                            
+                            def plot_supply_curves(wacc_model, results, country_index):
+    
+    # Select country
+    national_results = xr.where(wacc_model.land_grids == country_index, results, np.nan)
+    
+    # Convert into dataframe
+    national_df = national_results.to_dataframe()
+    
+    # Create axis
+    fig, ax = plt.subplots(figsize=(5, 5), facecolor="white")
+    
+    # Color 
+    color = ["red", "blue", "black"]
+    
+    # Sort each of the three variables
+    for i, variable in enumerate(["Calculated_LCOE", "Uniform_LCOE", "Subnational_LCOE"]):
+        
+        # Extract data
+        extracted_data = national_df[[variable, "electricity_production"]]
+        
+        # Sort values
+        extracted_data = extracted_data.sort_values(by=[variable], ascending=True)
+        
+        # Create cumulative sum
+        extracted_data['cumulative_production'] = extracted_data['electricity_production'].cumsum()
+        
+        # Plot
+        ax.plot(extracted_data['cumulative_production'], extracted_data[variable], color=color[i], lw=2.5, label=variable, linestyle="--")
+        
+    # Set axis limits
+    ax.set_ylim([0, 100])
+    ax.text(0.02, 0.9, country_index, transform=ax.transAxes, fontsize=15, fontweight='bold')
+        
+solar_results = wacc_model.solar_results
+for i in np.arange(1, 251, 1)
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+ def run_TIAM_regions(wacc_model):
+        
+    # Extract the relevant data
+    TIAM_regions = wacc_model.TIAM_regions 
+    
+    # Specify input
+    solar_results = wacc_model.solar_lcoe
+    onshore_results = wacc_model.wind_lcoe
+    offshore_results = wacc_model.offshore_lcoe
+    
+    # Specify uniform factors
+    solar_uf = wacc_model.solar_pv_uf
+    onshore_uf = wacc_model.onshore_uf
+    offshore_uf = wacc_model.offshore_uf
+    
+    # Specify postprocessor
+    postprocessor = wacc_model.postprocessor
+
+    # Call postprocessing function to create the corresponding supply curve
+    plot_TIAM_lcoe(postprocessor, solar_results, onshore_results, offshore_results, solar_uf, onshore_uf, offshore_uf)
+
+        
+def plot_TIAM_lcoe(postprocessor, solar_filtered_results, onshore_filtered_results, offshore_filtered_results, solar_uf, onshore_uf, offshore_uf):
+    
+    # Get Solar and Wind Datasets with technical potential
+    solar_ds = postprocessor.get_supply_curves_v2(solar_filtered_results,  "Solar")
+    wind_ds = postprocessor.get_supply_curves_v2(onshore_filtered_results, "Onshore Wind")
+    offshore_ds = postprocessor.get_supply_curves_v2(offshore_filtered_results, "Offshore Wind")
+    
+    
+    # Plot corresponding results separately
+    produce_lcoe_potential_v1(postprocessor, solar_ds, xlim=250000, graphmarking="a", uniform_value=solar_uf, position="upper", filename="LCOE_Supply_Solar", technology="Solar")
+    produce_lcoe_potential_v1(postprocessor, wind_ds, xlim=250000, graphmarking="b", uniform_value=onshore_uf, position="upper", filename="LCOE_Supply_Onshore", technology="Onshore Wind")
+    produce_lcoe_potential_v1(postprocessor, offshore_ds, xlim=2500, technology="Offshore Wind", graphmarking="c", uniform_value=offshore_uf, position="lower", filename="LCOE_Supply_Offshore")
+
+
+def produce_lcoe_potential_v1(postprocessor, supply_ds, filename=None, graphmarking=None, position=None, uniform_value=None, technology=None, region_code=None, subnational=None, xlim=None):
+    
+    def thousands_format(x, pos):
+        return f'{int(x):,}'
+    
+    # Convert the dataset into a dataframe
+    supply_df = supply_ds.to_dataframe()
+    
+    # Merge with the country and region mapping
+    merged_supply_df = pd.merge(supply_df, postprocessor.country_mapping.rename(columns={"index":"Country"}), how="left", on="Country")
+
+    # Merge with country_mapping to give
+    supply_df = merged_supply_df.copy().dropna(axis=0, subset=["Calculated_LCOE", "Country"], how="all")
+
+    # Create two copies
+    uniform_df = merged_supply_df.copy().dropna(axis=0, subset=["Uniform_LCOE", "Country"], how="all")
+    wacc_df = merged_supply_df.copy().dropna(axis=0, subset=["Calculated_LCOE", "Country"], how="all")
+    if subnational is not None:
+        subnational_df = merged_supply_df.copy().dropna(axis=0, subset=["Subnational_LCOE", "Country"], how="all")
+
+    # Convert units to TWh
+    supply_df['technical_potential'] = supply_df['technical_potential'] / 1e+09
+    uniform_df['technical_potential'] = uniform_df['technical_potential'] / 1e+09
+    wacc_df['technical_potential'] = wacc_df['technical_potential'] / 1e+09
+    if subnational is not None:
+        subnational_df['technical_potential'] = subnational_df['technical_potential'] / 1e+09
+
+    # For the WACC case, sort values and calculate cumulative sum
+    wacc_sorted_df = wacc_df.sort_values(by=['Region', 'Calculated_LCOE'], ascending=True)
+    wacc_sorted_df['cumulative_potential'] = wacc_sorted_df.groupby('Region')['technical_potential'].cumsum()
+    wacc_grouped = wacc_sorted_df.groupby('Region')
+
+    # For the Uniform WACC case, sort values and calculate cumulative sum
+    uniform_sorted_df = uniform_df.sort_values(by=['Region', 'Uniform_LCOE'], ascending=True)
+    uniform_sorted_df['cumulative_potential'] = uniform_sorted_df.groupby('Region')['technical_potential'].cumsum()
+    uniform_grouped = uniform_sorted_df.groupby('Region')
+    
+    if subnational is not None:
+        # For the Uniform WACC case, sort values and calculate cumulative sum
+        subnational_sorted_df = subnational_df.sort_values(by=['Region', 'Uniform_LCOE'], ascending=True)
+        subnational_sorted_df['cumulative_potential'] = subnational_sorted_df.groupby('Region')['technical_potential'].cumsum()
+        subnational_grouped = subnational_sorted_df.groupby('Region')
+
+    # Set regional colour scheme
+    region_colors = {
+    "AFR": "purple",          # Stays the same, distinct
+    "AUS": "dodgerblue",      # Changed from "cornflowerblue" to a more vivid blue
+    "FSU": "gold",            # Changed from "yellow" to "gold" for richer contrast
+    "CAN": "lightgray",       # Changed from "silver" to "lightgray" for a softer tone
+    "CHN": "red",             # Stays the same, highly distinct
+    "CSA": "forestgreen",     # Changed from "green" to "forestgreen" for a deeper tone
+    "IND": "darkorange",      # Changed from "orange" to "darkorange" for higher contrast
+    "JPN": "teal",            # Changed from "cyan" to "teal" for a stronger, less bright tone
+    "MEA": "goldenrod",       # Changed from "olive" to "goldenrod" for a less muted yellow
+    "MEX": "black",           # Stays the same, highly distinct
+    "ODA": "hotpink",         # Changed from "pink" to "hotpink" for vibrancy
+    "EEU": "limegreen",       # Changed from "darkgreen" to "limegreen" for brightness
+    "KOR": "chocolate",       # Changed from "sandybrown" to "chocolate" for richer tone
+    "USA": "firebrick",       # Changed from "crimson" to "firebrick" for a slightly muted red
+    "WEU": "navy"             # Changed from "darkblue" to "navy" for stronger differentiation
+}
+    # Plot the results
+    if technology == "Offshore Wind":
+        width_ratio = [1, 1]
+    else:
+        width_ratio = [2, 1]
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8),gridspec_kw = {'wspace':0, 'hspace':0, 'width_ratios': width_ratio})
+    region_list = ["AFR", "FSU", "CSA", "MEA", "ODA", "EEU"]
+    other_regions = list(set(region_colors.keys()) - set(region_list))
+    selected_region_colors = dict((region, region_colors[region]) for region in region_list if region in region_colors)
+    other_region_colors = dict((region, region_colors[region]) for region in other_regions if region in region_colors)
+    
+    # Loop over the regions specified
+    for region in region_list:
+
+        # Extract color for region
+        region_shading = region_colors.get(region, "grey")
+    
+    
+        # Get cumulative production data for the region
+        country_wacc_potential = wacc_grouped[['cumulative_potential']].get_group(region)
+        uniform_wacc_potential = uniform_grouped[['cumulative_potential']].get_group(region)
+        
+        # Get corresponding lcoe
+        country_wacc_lcoe = wacc_grouped[['Calculated_LCOE']].get_group(region)
+        uniform_wacc_lcoe = uniform_grouped[['Uniform_LCOE']].get_group(region)
+
+        # Produce plots of LCOE against supply for each region
+        ax1.plot(country_wacc_potential,country_wacc_lcoe , color=region_shading, linestyle="-")
+        ax1.plot(uniform_wacc_potential,uniform_wacc_lcoe, color=region_shading, linestyle="--")
+        
+        # Plot the subnational if applicable
+        if subnational is not None:
+            subnational_wacc_potential = subnational_grouped[['cumulative_potential']].get_group(region)
+            subnational_wacc_lcoe = subnational_grouped[['Subnational_LCOE']].get_group(region)
+            ax1.plot(subnational_wacc_potential,subnational_wacc_lcoe, color=region_shading, linestyle=":")
+            
+    # Create the legend
+    handles = [plt.Line2D([0], [0], color=color, lw=4, label=region) for region, color in region_colors.items()]
+    ax1.legend(handles=handles, title="Regions", loc=position+ " right", ncol=5, fontsize=12, title_fontsize=15)
+    
+    # Set labels
+    ax1.set_ylim(0, 250)
+    ax1.set_xlim(0, xlim)
+    ax1.set_ylabel('Levelised Cost of Electricity\n(USD/MWh, '+ technology + ')', fontsize=18)
+    ax1.set_xlabel('Developing Regions\nAnnual Electricity Potential (TWh/year)', fontsize=18)
+    ax1.xaxis.set_major_formatter(FuncFormatter(thousands_format))
+
+    # Set the size of x and y-axis tick labels
+    ax1.tick_params(axis='x', labelsize=15)  # Adjust the labelsize as needed
+    ax1.tick_params(axis='y', labelsize=15)  # Adjust the labelsize as needed
+            
+    # Loop over the regions specified
+    for region in other_regions:
+
+        # Extract color for region
+        region_shading = region_colors.get(region, "grey")
+    
+    
+        # Get cumulative production data for the region
+        country_wacc_potential = wacc_grouped[['cumulative_potential']].get_group(region)
+        uniform_wacc_potential = uniform_grouped[['cumulative_potential']].get_group(region)
+        
+        # Get corresponding lcoe
+        country_wacc_lcoe = wacc_grouped[['Calculated_LCOE']].get_group(region)
+        uniform_wacc_lcoe = uniform_grouped[['Uniform_LCOE']].get_group(region)
+
+        # Produce plots of LCOE against supply for each region
+        ax2.plot(country_wacc_potential,country_wacc_lcoe , color=region_shading, linestyle="-")
+        ax2.plot(uniform_wacc_potential,uniform_wacc_lcoe, color=region_shading, linestyle="--")
+        
+        # Plot the subnational if applicable
+        if subnational is not None:
+            subnational_wacc_potential = subnational_grouped[['cumulative_potential']].get_group(region)
+            subnational_wacc_lcoe = subnational_grouped[['Subnational_LCOE']].get_group(region)
+            ax2.plot(subnational_wacc_potential,subnational_wacc_lcoe, color=region_shading, linestyle=":")
+            
+    # Create the legend
+    solid_line = plt.Line2D([0], [0], color="black", lw=4, linestyle='-', label='Estimated country- and\ntechnology- WACCs')
+    dashed_line = plt.Line2D([0], [0], color="black", lw=4, linestyle='--', label=f'Uniform {uniform_value:0.1f}% WACC')
+    style_handles = [solid_line, dashed_line]
+    ax2.legend(handles=style_handles, title="Cost of Capital", loc=position+ " left", ncol=1, fontsize=12, title_fontsize=15)
+    
+    # Set labels
+    ax2.set_ylim(0, 250)
+    if technology == "Offshore Wind":
+        ax2.set_xlim(0, xlim)
+    else:
+        ax2.set_xlim(0, xlim/2)
+
+    ax2.set_xlabel('Developed & Industrialising Regions\nAnnual Electricity Potential (TWh/year)', fontsize=18)
+    ax2.xaxis.set_major_formatter(FuncFormatter(thousands_format))
+
+    # Set the size of x and y-axis tick labels
+    ax2.tick_params(axis='x', labelsize=15)  # Adjust the labelsize as needed
+    ax2.tick_params(axis='y', labelsize=0)  # Adjust the labelsize as needed
+
+    if xlim is not None:
+        if technology == "Offshore Wind":
+            ax1.xaxis.set_ticks(np.arange(0, xlim, 500))
+            ax2.xaxis.set_ticks(np.arange(0, (xlim), 500))
+        else:
+            ax1.xaxis.set_ticks(np.arange(0, xlim, 25000))
+            ax2.xaxis.set_ticks(np.arange(0, (xlim/2), 25000))
+
+    if graphmarking is not None:
+        ax1.text(0.02, 0.94, graphmarking, transform=ax1.transAxes, fontsize=20, fontweight='bold')
+
+    if region_code is not None:
+        ax1.text(0.15, 0.9, technology + "\n" + region_code, transform=ax1.transAxes, fontsize=20, fontweight='bold', ha="center", va="center")
+
+    if filename is not None:
+        plt.savefig(filename + ".png", bbox_inches="tight")
+
+    plt.show()
+
+
+
+run_TIAM_regions(wacc_model)
+
+
+def get_locational_capacity(postprocessor, tech_potential_ds, GW_target, country_deployment_limits, technology):
+    
+    # Convert into a dataframe
+    tech_potential_df = tech_potential_ds.to_dataframe()
+     
+    # Add in region and country to the dataframe
+    potential_df_unindexed = pd.merge(tech_potential_df.reset_index(), postprocessor.country_mapping.rename(columns={"index":"Country"})[['Country', 'Region']], how="left", on="Country")
+    potential_df = potential_df_unindexed.set_index(["latitude", "longitude"])
+    print(potential_df)
+    potential_df  = potential_df[~potential_df .index.duplicated()]
+    
+    # Order the dataframe by Uniform LCOE
+    uniform_ordered_df = potential_df.copy().sort_values(by=["Uniform_LCOE"], ascending=True)
+    
+    # Order the dataframe by Calculated LCOE
+    national_ordered_df = potential_df.copy().sort_values(by=["Calculated_LCOE"], ascending=True)
+    
+    # Process deployment limits based on solar and wind targets
+    if technology == "Solar":
+        country_deployment_limits['national_deployment_limit'] = 2 * country_deployment_limits['Solar_Target']
+    else:
+        country_deployment_limits['national_deployment_limit'] = 2 * country_deployment_limits['Wind_Target']
+        
+    # For countries without targets, set the limit as 50% of current installed capacity
+    #country_deployment_limits['national_deployment_limit'] = np.where(np.isnan(country_deployment_limits['national_deployment_limit']), 0.5 * country_deployment_limits['Total'], country_deployment_limits['national_deployment_limit'])
+    
+    # For countries without data on installed capacity, set the limit as 10 GW
+    country_deployment_limits['national_deployment_limit'] = np.where(np.isnan(country_deployment_limits['national_deployment_limit']), 100,country_deployment_limits['national_deployment_limit'])
+    
+    
+    # Calculate with national limits
+    uniform_ordered_df = tripling_renewables_locations(uniform_ordered_df.reset_index(), GW_target, country_deployment_limits)
+    national_ordered_df = tripling_renewables_locations(national_ordered_df.reset_index(), GW_target, country_deployment_limits)
+    
+    # Set indexes
+    uniform_df = uniform_ordered_df.set_index(["latitude", "longitude"])
+    national_df = national_ordered_df.set_index(["latitude", "longitude"])
+    
+    # Remove duplicated indexes 
+    uniform_df_reindexed = uniform_df[~uniform_df.index.duplicated()]
+    national_df_reindexed = national_df[~national_df.index.duplicated()]
+    
+    # Convert to xarray
+    uniform_ds = uniform_df_reindexed.to_xarray()
+    national_ds = national_df_reindexed.to_xarray()
+    
+    return national_ds, uniform_ds
+ 
+    
+def tripling_renewables_locations(potential_df, GW_target, country_deployment_limits):
+
+
+    # Group by country 
+    country_grouped = potential_df.groupby('Country')
+    
+    # Extract cumulative capacity potential 
+    potential_df['national_cumulative_capacity'] = potential_df.groupby('Country')['capacity_GW'].cumsum()
+    
+    # Read in national deployment limit
+    storage_df = pd.merge(potential_df, country_deployment_limits, how="left", on="Country")
+    
+    # Apply limits to each country
+    storage_df['national_cumulative_capacity'] = np.where(storage_df['national_cumulative_capacity'] > storage_df['national_deployment_limit'], np.nan, storage_df['national_cumulative_capacity'])
+    
+    # Recalculate cumulative capacity
+    storage_df['national_capacity_GW'] = np.where(np.isnan(storage_df['national_cumulative_capacity']), np.nan, storage_df['capacity_GW'])
+    
+    # Extract new cumulative sum of capacity 
+    storage_df['cumulative_national_GW'] = storage_df['national_capacity_GW'].cumsum()
+    
+    # Apply flag
+    storage_df['GW_national_flag'] = np.where(storage_df['cumulative_national_GW']< GW_target, 1, np.nan)
+    storage_df['GW_national_flag'] = np.where(np.isnan(storage_df['national_capacity_GW']), np.nan, storage_df['GW_national_flag'])
+    
+    return storage_df
+                                         
+                                         
+                                  
+                                
+    
+country_deployment_limits = pd.read_csv("country_deployment_limits.csv")
+solar_ds = wacc_model.postprocessor.get_supply_curves_v2(wacc_model.solar_lcoe,  "Solar")
+wind_ds = wacc_model.postprocessor.get_supply_curves_v2(wacc_model.wind_lcoe, "Onshore Wind")
+national_solar, uniform_solar = get_locational_capacity(wacc_model.postprocessor, solar_ds, 11000, country_deployment_limits, "Solar")
+national_onshore, uniform_onshore = get_locational_capacity(wacc_model.postprocessor, wind_ds, 11000, country_deployment_limits, "Wind")
+
+wacc_model.postprocessor.plot_data_shading(national_solar['GW_national_flag'], national_solar.latitude, national_solar.longitude, tick_values=[0, 1], cmap="YlOrRd") 
+wacc_model.postprocessor.plot_data_shading(uniform_solar['GW_national_flag'], national_solar.latitude, national_solar.longitude, tick_values=[0, 1], cmap="YlOrRd") 
+wacc_model.postprocessor.plot_data_shading(national_onshore['GW_national_flag'], national_solar.latitude, national_solar.longitude, tick_values=[0, 1], cmap="YlGnBu") 
+wacc_model.postprocessor.plot_data_shading(uniform_onshore['GW_national_flag'], national_solar.latitude, national_solar.longitude, tick_values=[0, 1], cmap="YlGnBu")         
+                            
+def get_supply_curves_v3(postprocessor, data, technology, offshore=None, LCOE_cutoff=None):
+
+    # Extract required parameters
+    annual_production = data['electricity_production']
+    latitudes = annual_production.latitude.values
+    longitudes = annual_production.longitude.values
+
+    # Get area and utilisations
+    grid_areas = postprocessor.get_areas(annual_production)
+    utilisation_factors = postprocessor.get_utilisations(annual_production, technology)
+
+    # Set out constants
+    if technology == "Onshore Wind":
+        power_density = 6520 # kW/km2
+        cutoff = 0.18
+    elif technology == "Offshore Wind":
+        power_density = 4000 # kW/km2
+        cutoff = 0.18
+    elif technology == "Solar":
+        power_density = 32950  # kW/km2
+        cutoff = 0.1
+    installed_capacity = 1000
+
+    # Apply cut off factors
+    utilisation_factors = xr.where(data['CF']<cutoff, 0, utilisation_factors)
+    if LCOE_cutoff is not None:
+        data['Calculated_LCOE'] = xr.where(data['CF']<cutoff, np.nan, data['Calculated_LCOE'])
+        data['Uniform_LCOE'] = xr.where(data['CF']<cutoff, np.nan, data['Uniform_LCOE'])
+
+    # Scale annual electricity production by power density
+    max_installed_capacity = power_density * grid_areas['area'] * utilisation_factors
+    ratios = max_installed_capacity / installed_capacity
+    technical_potential = annual_production * ratios
+
+    # Include additional data into the dataset
+    data['technical_potential'] = technical_potential
+    data['capacity_GW'] = max_installed_capacity / 1e+06 # convert from kW to GW 
+    if technology == "Offshore Wind":
+        data['Country'] = postprocessor.country_grids['sea']
+    else:
+        data['Country'] = postprocessor.country_grids['land']
+
+    return data
+
+
+
+def get_locational_capacity_v2(postprocessor, tech_potential_ds, GW_target, country_deployment_limits, technology, regional_deployment_limits=None):
+    
+    # Convert into a dataframe
+    tech_potential_df = tech_potential_ds.to_dataframe()
+    
+    # Apply restriction
+    scaling_factor = 0.05
+    tech_potential_df['capacity_GW'] = tech_potential_df['capacity_GW'] * scaling_factor
+    tech_potential_df['technical_potential'] = tech_potential_df['technical_potential'] * scaling_factor
+    
+     
+    # Add in region and country to the dataframe
+    potential_df_unindexed = pd.merge(tech_potential_df.reset_index(), postprocessor.country_mapping.rename(columns={"index":"Country"})[['Country', 'Region']], how="left", on="Country")
+    potential_df = potential_df_unindexed.set_index(["latitude", "longitude"])
+    potential_df_reindexed  = potential_df[~potential_df .index.duplicated()]
+    
+    # Order the dataframe by Uniform LCOE
+    uniform_ordered_df = potential_df_reindexed.copy().sort_values(by=["Uniform_LCOE"], ascending=True)
+    
+    # Order the dataframe by Calculated LCOE
+    national_ordered_df = potential_df_reindexed.copy().sort_values(by=["Calculated_LCOE"], ascending=True)
+    
+    # Process deployment limits based on solar and wind targets
+    if technology == "Solar":
+        regional_deployment_limits['regional_deployment_limit'] = 1.25 * regional_deployment_limits['Solar_Target'] 
+    else:
+        regional_deployment_limits['regional_deployment_limit'] = 1.25 * regional_deployment_limits['Wind_Target']
+
+    regional_deployment_limits['regional_deployment_limit'] = regional_deployment_limits['regional_deployment_limit'].fillna(value=100)
+    
+    # Calculate with national limits
+    uniform_limited_df = tripling_renewables_regional(uniform_ordered_df.reset_index(), GW_target, regional_deployment_limits)
+    national_limited_df = tripling_renewables_regional(national_ordered_df.reset_index(), GW_target, regional_deployment_limits)
+    
+    # Set indexes
+    uniform_df = uniform_limited_df.set_index(["latitude", "longitude"])
+    national_df = national_limited_df.set_index(["latitude", "longitude"])
+    
+    # Remove duplicated indexes 
+    uniform_df_reindexed = uniform_df[~uniform_df.index.duplicated()]
+    national_df_reindexed = national_df[~national_df.index.duplicated()]
+    
+    # Convert to xarray
+    uniform_ds = uniform_df_reindexed.to_xarray()
+    national_ds = national_df_reindexed.to_xarray()
+    
+    return national_ds, uniform_ds
+ 
+def tripling_renewables_regional(potential_df, GW_target, regional_deployment_limits):
+    
+    # Extract cumulative capacity potential 
+    potential_df['regional_cumulative_capacity'] = potential_df.groupby('Region')['capacity_GW'].cumsum()
+    storage_df = pd.merge(potential_df, regional_deployment_limits, how="left", on="Region")
+        
+    # Name 
+    processing_df = storage_df.copy()
+    
+    # Apply limits to each country
+    processing_df['national_regional_capacity'] = np.where(processing_df['regional_cumulative_capacity'] > processing_df['regional_deployment_limit'], np.nan, processing_df['regional_cumulative_capacity'])
+    
+    # Recalculate cumulative capacity
+    processing_df['regional_capacity_GW'] = np.where(np.isnan(processing_df['regional_cumulative_capacity']), np.nan, processing_df['capacity_GW'])
+
+    # Extract new cumulative sum of capacity 
+    processing_df['cumulative_regional_GW'] = processing_df['regional_capacity_GW'].cumsum()
+
+    # Apply flag
+    processing_df['GW_national_flag'] = np.where(processing_df['cumulative_regional_GW']< GW_target, 1, np.nan)
+    processing_df['GW_national_flag'] = np.where(np.isnan(processing_df['regional_capacity_GW']), np.nan, processing_df['GW_national_flag'])
+
+    return processing_df
+    
+
+
+def combine_wind_solar(postprocessor, country_deployment_limits, regional_deployment_limits):
+    
+    def calculate_output(dataset, scenario):
+        
+        # Get wind
+        wind_output = xr.where(dataset['COP28_Wind'] == 1, dataset['wind_potential'], np.nan)
+        wind_total = wind_output.sum(skipna=True)/1e+09
+        wind_cf = xr.where(dataset['COP28_Wind'] == 1, dataset['Wind_CF'], np.nan)
+        wind_mean_cf = wind_cf.mean(skipna=True)*100
+        
+        # Get solar output
+        solar_output = xr.where(dataset['COP28_Solar'] == 1, dataset['solar_potential'], np.nan)
+        solar_cf = xr.where(dataset['COP28_Solar'] == 1, dataset['Solar_CF'], np.nan)
+        solar_total = solar_output.sum(skipna=True)/1e+09
+        solar_mean_cf = solar_cf.mean(skipna=True)*100
+        
+        # Print output
+        print(f"Output for {scenario} is {wind_total:0.2f}TWh for onshore wind and {solar_total:0.2f}TWh for solar PV")
+        print(f"Mean Capacity Factor for {scenario} is {wind_mean_cf:0.2f}% for onshore wind and {solar_mean_cf:0.2f}% for solar PV")
+        
+        return wind_total, solar_total
+
+    # Get onshore wind and solar results
+    solar_ds = get_supply_curves_v3(wacc_model.postprocessor, wacc_model.solar_lcoe,  "Solar")
+    wind_ds = get_supply_curves_v3(wacc_model.postprocessor, wacc_model.wind_lcoe, "Onshore Wind")
+
+    # Get solar results
+    national_solar, uniform_solar = get_locational_capacity_v2(wacc_model.postprocessor, solar_ds, 11000, country_deployment_limits, "Solar", regional_deployment_limits=regional_deployment_limits)
+
+    # Get wind results
+    national_onshore, uniform_onshore = get_locational_capacity_v2(wacc_model.postprocessor, wind_ds, 11000, country_deployment_limits, "Wind",regional_deployment_limits=regional_deployment_limits)
+
+    # Combine Uniform scenario
+    uniform_solar = uniform_solar.rename(name_dict={"GW_national_flag":"COP28_Solar", "technical_potential":"solar_potential", "CF":"Solar_CF", "capacity_GW":"solar_GW"})
+    uniform_onshore = uniform_onshore.rename(name_dict={"GW_national_flag":"COP28_Wind", "technical_potential":"wind_potential", "CF":"Wind_CF", "capacity_GW":"wind_GW"})
+    uniform_results = xr.merge([uniform_solar[['Country', 'COP28_Solar', 'solar_potential', "Solar_CF", "solar_GW"]], uniform_onshore[['COP28_Wind', 'wind_potential', "Wind_CF", "wind_GW"]]], join="left")
+
+    # Combine National scenario
+    national_solar = national_solar.rename(name_dict={"GW_national_flag":"COP28_Solar", "technical_potential":"solar_potential", "CF":"Solar_CF", "capacity_GW":"solar_GW"})
+    national_onshore = national_onshore.rename(name_dict={"GW_national_flag":"COP28_Wind", "technical_potential":"wind_potential", "CF":"Wind_CF","capacity_GW":"wind_GW"})
+    national_results = xr.merge([national_solar[['Country', 'COP28_Solar', 'solar_potential', "Solar_CF", "solar_GW"]], national_onshore[['COP28_Wind', 'wind_potential', "Wind_CF", "wind_GW"]]], join="left")
+    
+    # Sum up technical potential
+    wind_uniform, solar_uniform = calculate_output(uniform_results, "Uniform")
+    wind_national, solar_national = calculate_output(national_results, "National")
+    print(f"Wind increases by {wind_uniform/wind_national}x")
+    print(f"Solar increases by {solar_uniform/solar_national}x")
+
+    return uniform_results, national_results
+                                         
+def plot_renewables_distribution(dataset, filename=None, graphmarking=None, scenario=None):      
+    
+    # Get latitudes and longitudes
+    latitudes = dataset.latitude.values
+    longitudes = dataset.longitude.values
+
+    # Get wind and solar data
+    wind_data = dataset['COP28_Wind']
+    solar_data = dataset['COP28_Solar']
+    wind_color = "navy"
+    solar_color = "orange"
+
+    # Create a figure and axes objects
+    fig = plt.figure(figsize=(30, 15), facecolor="white")
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
+
+    # Apply shading for wind and solar
+    wind_overlay = np.where(wind_data == 1, 1, np.nan)
+    solar_overlay = np.where(solar_data == 1, 1, np.nan)
+    wind_hatching = ax.contourf(longitudes, latitudes, wind_overlay, colors=wind_color, linewidth=0.05, transform=ccrs.PlateCarree(), alpha=0.8)
+    solar_hatching = ax.contourf(longitudes, latitudes, solar_overlay, colors=solar_color, linewidth=0.05, transform=ccrs.PlateCarree(), alpha=0.8)
+
+    # set the extent and aspect ratio of the plot
+    ax.set_extent([longitudes.min(), longitudes.max(), latitudes.min(), latitudes.max()], crs=ccrs.PlateCarree())
+    aspect_ratio = (latitudes.max() - latitudes.min()) / (longitudes.max() - longitudes.min())
+    ax.set_aspect(1)
+
+    # add axis labels and a title
+    ax.set_xlabel('Longitude', fontsize=30)
+    ax.set_ylabel('Latitude', fontsize=30)
+    borders = cfeature.NaturalEarthFeature(category='cultural', name='admin_0_boundary_lines_land', scale='10m', facecolor='none')
+    ax.add_feature(borders, edgecolor='gray', linestyle=':')
+    ax.coastlines()
+    ax.coastlines()
+
+    # Add Legend
+    hatch_patches=[]
+    wind_patch = Patch(facecolor=wind_color, edgecolor='black', hatch="", label="Onshore Wind")
+    solar_patch = Patch(facecolor=solar_color, edgecolor='black', hatch="", label="Solar PV")
+    hatch_patches.append(solar_patch)
+    hatch_patches.append(wind_patch)
+    ax.legend(title=scenario + " Scenario:\nLowest cost locations\nfor 11,000 GW", handles=hatch_patches, loc='lower left', fontsize=20, title_fontsize=25, alignment="left") 
+
+    if graphmarking is not None:
+        ax.text(0.02, 0.94, graphmarking, transform=ax.transAxes, fontsize=20, fontweight='bold')
+
+    if filename is not None:
+        plt.savefig(filename + ".png", bbox_inches="tight")
+
+    return
+
+                                    
+country_deployment_limits = pd.read_csv("country_deployment_limits.csv")
+regional_deployment_limits = pd.read_csv("regional_deployment_limits.csv")
+
+uniform_results, national_results = combine_wind_solar(wacc_model.postprocessor, country_deployment_limits, regional_deployment_limits)
+plot_renewables_distribution(uniform_results, scenario="Uniform", filename="Uniform_Tripling", graphmarking="b")
+plot_renewables_distribution(national_results, scenario="National", filename="National_Tripling", graphmarking="a")     
+
+def calculate_abatement_costs(CI_data, capacity_data):
+    
+    # Perform the calculation
+    solar_tCO2 = CI_data /1000000 * capacity_data['solar_potential'] * 20 * 0.5
+    wind_tCO2 = CI_data /1000000 * capacity_data['wind_potential'] * 20 * 0.5
+    capacity_data['solar_abatement'] = xr.where(capacity_data['COP28_Solar'] == 1, solar_tCO2, np.nan)
+    capacity_data['wind_abatement'] = xr.where(capacity_data['COP28_Wind'] == 1, wind_tCO2, np.nan)
+    
+    return capacity_data
+
+uniform_results = calculate_abatement_costs(country_CI, uniform_results)
+national_results = calculate_abatement_costs(country_CI, national_results)
+
+wacc_model.postprocessor.plot_data_shading(national_results['wind_abatement']/1000000, national_results.latitude.values, national_results.longitude.values,tick_values=[0, 2, 4, 6, 8, 10, 15, 20], cmap="Purples")
+wacc_model.postprocessor.plot_data_shading(uniform_results['wind_abatement']/1000000, national_results.latitude.values, national_results.longitude.values,tick_values=[0, 2, 4, 6, 8, 10, 15, 20], cmap="Purples")
+
+def calculate_abatement_costs(CI_data, capacity_data):
+    
+    # Perform the calculation
+    solar_tCO2 = CI_data /1000000 * capacity_data['solar_potential'] * 20 * 0.5
+    wind_tCO2 = CI_data /1000000 * capacity_data['wind_potential'] * 20 * 0.5
+    capacity_data['solar_abatement'] = xr.where(capacity_data['COP28_Solar'] == 1, solar_tCO2, np.nan)
+    capacity_data['wind_abatement'] = xr.where(capacity_data['COP28_Wind'] == 1, wind_tCO2, np.nan)
+    
+    return capacity_data
+
+uniform_results = calculate_abatement_costs(country_CI, uniform_results)
+national_results = calculate_abatement_costs(country_CI, national_results)
+print(f"For Solar, the Uniform abatement is {np.nansum(uniform_results['solar_abatement'])} and the National is {np.nansum(national_results['solar_abatement'])}")
+print(f"For Wind, the Uniform abatement is {np.nansum(uniform_results['wind_abatement'])} and the National is {np.nansum(national_results['wind_abatement'])}")
+      
+      
+# Call abatement function
+wacc_model.postprocessor.plot_data_shading(national_results['wind_abatement']/1000000, national_results.latitude.values, national_results.longitude.values,tick_values=[0, 2, 4, 6, 8, 10, 15, 20], cmap="Purples", title="Wind-National:\nAbatement\nPotential\n(MtCO2)\n", graphmarking="a", filename="COP_Wind_Abatement_National")
+wacc_model.postprocessor.plot_data_shading(uniform_results['wind_abatement']/1000000, national_results.latitude.values, national_results.longitude.values,tick_values=[0, 2, 4, 6, 8, 10, 15, 20], cmap="Purples", title="Wind-Uniform:\nAbatement\nPotential\n(MtCO2)\n", graphmarking="b", filename="COP_Wind_Abatement_Uniform")
+wacc_model.postprocessor.plot_data_shading(national_results['solar_abatement']/1000000, national_results.latitude.values, national_results.longitude.values,tick_values=[0, 2, 4, 6, 8, 10, 15, 20], cmap="Purples", title="Solar-National:\nAbatement\nPotential\n(MtCO2)\n", graphmarking="a", filename="COP_Solar_Abatement_National")
+wacc_model.postprocessor.plot_data_shading(uniform_results['solar_abatement']/1000000, national_results.latitude.values, national_results.longitude.values,tick_values=[0, 2, 4, 6, 8, 10, 15, 20], cmap="Purples", title="Solar-Uniform:\nAbatement\nPotential\n(MtCO2)\n", graphmarking="b", filename="COP_Solar_Abatement_Uniform")
+
+def plot_lcoe_abatement(wacc_model, lcoe_data, uniform_data, national_data, technology):
+    
+    # Specify location to extract
+    if technology == "Solar":
+        abatement = "solar_abatement"
+    else:
+        abatement = "wind_abatement"
+        
+    # Extract abatement
+    uniform_abatement = uniform_data[abatement]
+    national_abatement = uniform_data[abatement]
+    
+    # Extract LCOE and abatement
+    uniform_lcoe = xr.where(np.isnan(uniform_abatement), np.nan, lcoe_data['Uniform_LCOE'])
+    calculated_lcoe = xr.where(np.isnan(national_abatement), np.nan, lcoe_data['Calculated_LCOE'])
+    
+    # Combine abatement for Uniform
+    lcoe_data['abatement'] = uniform_data[abatement]
+    lcoe_data['Uniform_LCOE'] = uniform_lcoe
+    
+    # Combine abatement for National
+    lcoe_data['abatement'] = national_data[abatement]
+    lcoe_data['Calculated_LCOE'] = calculated_lcoe
+    lcoe_data['Country'] = uniform_data['Country']
+    
+    # Merge with the region mapping
+    lcoe_data = lcoe_data.to_dataframe()
+    merged_data = pd.merge(lcoe_data, wacc_model.postprocessor.country_mapping.rename(columns={"index":"Country"})[['Country', 'Region']], how="left", on="Country")
+    
+    return merged_data
+    
+    
+
+    
+merged_data = plot_lcoe_abatement(wacc_model, wacc_model.solar_lcoe, uniform_results, national_results, "Solar")
+                                
+                            
+                            
+                            

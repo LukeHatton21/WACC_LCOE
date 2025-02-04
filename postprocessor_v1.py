@@ -17,7 +17,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 class PostProcessor:
-    def __init__(self, output_folder, solar_results, wind_results, offshore_results, GDP_capita, land_cover, land_mapping, country_grids, TIAM_regions, country_mapping, solar_cf, wind_cf):
+    def __init__(self, output_folder, solar_results, wind_results, offshore_results, GDP_capita, land_cover, land_mapping, country_grids, TIAM_regions, country_mapping, solar_cf, wind_cf, country_wacc_mapping):
         """ Initialises the PostProcessor class, which is used for geospatial mapping and postprocessing
        
         Inputs:
@@ -31,6 +31,7 @@ class PostProcessor:
         Country_mapping - CSV file with a mapping of country numbers to country codes
         Solar_CF - netcdf file containing average capacity factor
         Wind_CF - netcdf file containing average capacity factor
+        country_wacc_mapping - Mapping of country waccs for solar PV, onshore wind and offshore wind
         
         
         """
@@ -45,15 +46,20 @@ class PostProcessor:
         self.solar_cf = solar_cf
         self.wind_cf = wind_cf
         
+        # Collate wind results
+        self.collated_wind_results = xr.merge([self.wind_results.drop(labels="capacity_GW", errors="ignore"), self.offshore_results], join="inner", compat="no_conflicts")
+        
         # Read in the input parameters
         self.GDP_capita = GDP_capita
         self.land_cover = land_cover
         self.land_mapping = land_mapping
         self.country_grids = country_grids
         self.country_mapping = country_mapping
+        self.TIAM_regions = TIAM_regions
         
         # Perform merges for GDP and for country grids
         self.GDP_country_mapping = pd.merge(self.country_mapping, self.GDP_capita, on="Country code", how="left")
+        self.country_wacc_mapping = country_wacc_mapping
                  
                  
                  
@@ -114,7 +120,7 @@ class PostProcessor:
 
 
 
-    def get_supply_curves_v2(self, data, technology, offshore=None):
+    def get_supply_curves_v2(self, data, technology, offshore=None, LCOE_cutoff=None):
 
         # Extract required parameters
         annual_production = data['electricity_production']
@@ -128,11 +134,20 @@ class PostProcessor:
         # Set out constants
         if technology == "Onshore Wind":
             power_density = 6520 # kW/km2
+            cutoff = 0.18
         elif technology == "Offshore Wind":
             power_density = 4000 # kW/km2
+            cutoff = 0.18
         elif technology == "Solar":
             power_density = 32950  # kW/km2
+            cutoff = 0.1
         installed_capacity = 1000
+        
+        # Apply cut off factors
+        utilisation_factors = xr.where(data['CF']<cutoff, 0, utilisation_factors)
+        if LCOE_cutoff is not None:
+            data['Calculated_LCOE'] = xr.where(data['CF']<cutoff, np.nan, data['Calculated_LCOE'])
+            data['Uniform_LCOE'] = xr.where(data['CF']<cutoff, np.nan, data['Uniform_LCOE'])
 
         # Scale annual electricity production by power density
         max_installed_capacity = power_density * grid_areas['area'] * utilisation_factors
@@ -387,9 +402,9 @@ class PostProcessor:
             ax.legend(handles=handles, title="Regions", loc="upper center", ncol=5, fontsize=15, title_fontsize=20)
         else:
             cbar = plt.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, ticks=[0, 5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000, 450000,50000], format=',', extend="max", anchor=(1.0, 0.5), pad=-0.1)
-        cbar.ax.yaxis.set_major_formatter(FuncFormatter(thousands_format))
-        cbar.set_label('GDP per capita (USDpp, 2022)', fontsize=20)
-        cbar.ax.tick_params(labelsize=15)
+            cbar.ax.yaxis.set_major_formatter(FuncFormatter(thousands_format))
+            cbar.set_label('GDP per capita (USDpp, 2022)', fontsize=20)
+            cbar.ax.tick_params(labelsize=15)
 
         
         
@@ -496,8 +511,7 @@ class PostProcessor:
         wind_df = self.produce_wacc_potential_curve_v2(wind_ds, uniform_value=regional_wind_wacc, region_code=region_code, technology="Onshore\nWind")
         solar_df = self.produce_wacc_potential_curve_v2(solar_ds, uniform_value=regional_solar_wacc, region_code=region_code, technology="Solar")
            
-
-    def plot_data_shading(self, values, latitudes, longitudes, anchor=None, filename=None, increment=None, title=None, tick_values=None, cmap=None, extend_set=None, graphmarking=None, special_value=None, hatch_label=None, hatch_label_2=None, special_value_2=None, center_norm=None):      
+    
     
         # create the heatmap using pcolormesh
         if anchor is None:
@@ -615,20 +629,26 @@ class PostProcessor:
         
         # Get solar WACCs
         solar_plot_waccs = self.get_wacc_values(self.country_wacc_mapping, country_geodata, "Solar")
-        solar_plot_waccs = xr.where(np.isnan(solar_results['Calculated_LCOE']), np.nan, solar_plot_waccs)
+        solar_plot_waccs = xr.where(np.isnan(self.solar_results['Calculated_LCOE']), np.nan, solar_plot_waccs)
         
         # Get onshore WACCs
         onshore_plot_waccs = self.get_wacc_values(self.country_wacc_mapping, country_geodata, "Onshore Wind")
-        onshore_plot_waccs = xr.where(np.isnan(solar_results['Calculated_LCOE']), np.nan, onshore_plot_waccs)
+        onshore_plot_waccs = xr.where(np.isnan(self.solar_results['Calculated_LCOE']), np.nan, onshore_plot_waccs)
         
         # Get offshore WACCs
         offshore_plot_waccs = self.get_wacc_values(self.country_wacc_mapping, country_geodata, "Offshore Wind")
         offshore_plot_waccs = xr.where(np.isnan(onshore_plot_waccs), np.nan, offshore_plot_waccs)
         
+        # Get collation
+        collated_wind_results = self.collated_wind_results
+        solar_results = self.solar_results
+        
         # Plot data
-        self.plot_data_shading(solar_plot_waccs,solar_plot_waccs.latitude, solar_plot_waccs.longitude, tick_values = [0, 5, 10, 15, 20], title="Estimated\nWACC \n (%, real,\nafter tax)\n", cmap="YlOrRd", extend_set="neither", filename = self.output_folder + "Solar_WACC_2023", graphmarking="a")
-        self.plot_data_shading(onshore_plot_waccs, onshore_plot_waccs.latitude, onshore_plot_waccs.longitude, tick_values = [0, 5, 10, 15, 20], title="Estimated\nWACC\n (%, real,\nafter tax)\n", cmap="YlGnBu", extend_set="neither", filename = self.output_folder + "Wind_WACC_2023", graphmarking="b")
-        self.plot_data_shading(offshore_plot_waccs, offshore_plot_waccs.latitude, offshore_plot_waccs.longitude, tick_values = [0, 5, 10, 15, 20], title="Estimated\nWACC\n (%, real,\nafter tax)\n", cmap="YlGnBu", extend_set="neither", filename = self.output_folder + "Offshore_Wind_WACC_2023", graphmarking="c")
+        #elf.plot_data_shading(solar_plot_waccs,solar_plot_waccs.latitude, solar_plot_waccs.longitude, tick_values = [0, 5, 10, 15, 20, 25], title="Estimated\nWACC \n (%, nom,\nafter tax)\n", cmap="YlOrRd", extend_set="neither", filename = self.output_folder + "Solar_WACC_2023", graphmarking="a")
+        #elf.plot_data_shading(onshore_plot_waccs, onshore_plot_waccs.latitude, onshore_plot_waccs.longitude, tick_values = [0, 5, 10, 15, 20, 25], title="Estimated\nWACC\n (%, nom,\nafter tax)\n", cmap="YlGnBu", extend_set="neither", filename = self.output_folder + "Onshore_Wind_WACC_2023", graphmarking="b")
+        #elf.plot_data_shading(offshore_plot_waccs, offshore_plot_waccs.latitude, offshore_plot_waccs.longitude, tick_values = [0, 5, 10, 15, 20, 25], title="Estimated\nWACC\n (%, nom,\nafter tax)\n", cmap="YlGnBu", extend_set="neither", filename = self.output_folder + "Offshore_Wind_WACC_2023", graphmarking="c")
+        self.plot_data_shading(solar_results['Estimated_WACC'], solar_results.latitude, solar_results.longitude, tick_values = [0, 5, 10, 15, 20, 25], title="Estimated\nWACC\n (%, nom,\nafter tax)\n", cmap="YlOrRd", extend_set="neither", filename = self.output_folder + "Solar_WACC_2023", graphmarking="a")
+        self.plot_data_shading(collated_wind_results['Estimated_WACC'], collated_wind_results.latitude, collated_wind_results.longitude, tick_values = [0, 5, 10, 15, 20, 25], title="Estimated\nWACC\n (%, nom,\nafter tax)\n", cmap="YlGnBu", extend_set="neither", filename = self.output_folder + "Wind_WACC_2023", graphmarking="b")
     
     
     def plot_LCOE_comparison(self):
@@ -636,24 +656,27 @@ class PostProcessor:
         # Drop latitude = 0
         wind_results = self.wind_results.drop_sel(latitude=0)
         solar_results = self.solar_results
+        offshore_results = self.offshore_results.drop_sel(latitude=0)
+        collated_wind_results = self.collated_wind_results
         
         # Plot corresponding graphs for solar LCOE
-        self.plot_data_shading(solar_results['Calculated_LCOE'], solar_results.latitude, solar_results.longitude, tick_values=[0, 25, 50, 75, 100], graphmarking="a", cmap="YlOrRd", filename = self.output_folder + "Solar_LCOE_Country", title="LCOE\n (US$/MWh)\n")
-        self.plot_data_shading(solar_results['Uniform_LCOE'], solar_results.latitude, solar_results.longitude, tick_values=[0, 25, 50, 75, 100], graphmarking="b", cmap="YlOrRd", filename = self.output_folder + "Solar_LCOE_Uniform", title="LCOE\n (US$/MWh)\n")
+        self.plot_data_shading(solar_results['Calculated_LCOE'], solar_results.latitude, solar_results.longitude, tick_values=[0, 25, 50, 75, 100, 150], graphmarking="a", cmap="YlOrRd", filename = self.output_folder + "Solar_LCOE_Country", title="LCOE\n (US$/MWh)\n")
+        self.plot_data_shading(solar_results['Uniform_LCOE'], solar_results.latitude, solar_results.longitude, tick_values=[0, 25, 50, 75, 100, 150], graphmarking="b", cmap="YlOrRd", filename = self.output_folder + "Solar_LCOE_Uniform", title="LCOE\n (US$/MWh)\n")
         #self.plot_data_shading(solar_results['Reduced_LCOE'], solar_results.latitude, solar_results.longitude, tick_values=[0, 25, 50, 75, 100, 150], graphmarking="b", cmap="YlGnBu", filename = self.output_folder + "Solar_LCOE_Reduced", title="LCOE\n (US$/MWh)\n")
         
         # Plot corresponding graphs for wind LCOE
-        self.plot_data_shading(wind_results['Calculated_LCOE'], wind_results.latitude, wind_results.longitude, tick_values=[0, 25, 50, 75, 100, 150], graphmarking="a", cmap="YlGnBu", filename = self.output_folder + "Wind_LCOE_Country", title="LCOE\n (US$/MWh)\n")
-        self.plot_data_shading(wind_results['Uniform_LCOE'], wind_results.latitude, wind_results.longitude, tick_values=[0, 25, 50, 75, 100, 150], graphmarking="b", cmap="YlGnBu", filename = self.output_folder + "Wind_LCOE_Uniform", title="LCOE\n (US$/MWh)\n")
-        #self.plot_data_shading(wind_results['Reduced_LCOE'], wind_results.latitude, wind_results.longitude, tick_values=[0, 25, 50, 75, 100, 150], graphmarking="b", cmap="YlGnBu", filename = self.output_folder + "Wind_LCOE_Reduced", title="LCOE\n (US$/MWh)\n")
+        
+        # Plot all wind results
+        self.plot_data_shading(collated_wind_results['Calculated_LCOE'], collated_wind_results.latitude, collated_wind_results.longitude, tick_values=[0, 25, 50, 75, 100, 150, 250], graphmarking="a", cmap="YlGnBu", filename = self.output_folder + "Wind_LCOE_Country", title="LCOE\n (US$/MWh)\n")
+        self.plot_data_shading(collated_wind_results['Uniform_LCOE'], collated_wind_results.latitude, collated_wind_results.longitude, tick_values=[0, 25, 50, 75, 100, 150, 250], graphmarking="b", cmap="YlGnBu", filename = self.output_folder + "Wind_LCOE_Uniform", title="LCOE\n (US$/MWh)\n")
+        
         
         # Plot change in LCOE for wind and solar
-        self.plot_data_shading((solar_results['Calculated_LCOE'] - solar_results['Uniform_LCOE']), solar_results.latitude, solar_results.longitude, tick_values=[-50, -25, 0, 25, 50], graphmarking="a", cmap="coolwarm", filename = self.output_folder + "Solar_LCOE_Change", title="Solar PV:\nIncrease in\n LCOE from\n 5.2% Scenario\n(US$/MWh)\n")
-        self.plot_data_shading((wind_results['Calculated_LCOE'] - wind_results['Uniform_LCOE']), wind_results.latitude, wind_results.longitude, tick_values=[-50, -25, 0, 25, 50], graphmarking="b", cmap="coolwarm", filename = self.output_folder + "Wind_LCOE_Change", title="Onshore Wind:\nIncrease in\nLCOE from\n4.8% Scenario\n(US$/MWh)\n")
+        #elf.plot_data_shading((collated_wind_results['Calculated_LCOE'] - collated_wind_results['Uniform_LCOE']), collated_wind_results.latitude, collated_wind_results.longitude, tick_values=[-50, -25, 0, 25, 50, 100], graphmarking="b", cmap="coolwarm", filename = self.output_folder + "Wind_LCOE_Change", title="Wind:\nIncrease in\nLCOE from\n4.8% Scenario\n(US$/MWh)\n")
     
         # Plot change in LCOE for wind and solar from reduced condition
-        #self.plot_data_shading((solar_results['Calculated_LCOE'] - solar_results['Reduced_LCOE']), solar_results.latitude, solar_results.longitude, tick_values=[-50, -25, 0, 25, 50], graphmarking="a", cmap="coolwarm", filename = self.output_folder + "Solar_LCOE_Reduced_Change", title="Solar PV:\nReduction in\n LCOE from\n national policy\n(US$/MWh)\n", )
-        #self.plot_data_shading((wind_results['Calculated_LCOE'] - wind_results['Reduced_LCOE']), wind_results.latitude, wind_results.longitude, tick_values=[-50, -25, 0, 25, 50], graphmarking="b", cmap="coolwarm", filename = self.output_folder + "Wind_LCOE_Reduced_Change", title="Onshore Wind:\nReduction in\n LCOE from\n national policy\n(US$/MWh)\n", )
+        self.plot_data_shading(((solar_results['Calculated_LCOE']/solar_results['Uniform_LCOE']) -1)*100, solar_results.latitude, solar_results.longitude, tick_values=[-100, -75,-50, -25, 0, 25, 50, 75, 100], graphmarking="a", cmap="bwr", filename = self.output_folder + "Solar_LCOE_PercentChange", title="Solar PV:\n% Increase\nin LCOE from\nUniform\nScenario\n")
+        self.plot_data_shading(((collated_wind_results['Calculated_LCOE']/collated_wind_results['Uniform_LCOE']) -1)*100, collated_wind_results.latitude, collated_wind_results.longitude, tick_values=[-100, -75,-50, -25, 0, 25, 50, 75, 100], graphmarking="a", cmap="bwr", filename = self.output_folder + "Wind_LCOE_PercentChange", title="Wind:\n% Increase\nin LCOE from\nUniform\nScenario\n")
     
     
     def plot_supply_curve_global(self, solar_uniform, wind_uniform, offshore_uniform, subnational=None, gdp_shading=None):
@@ -706,14 +729,28 @@ class PostProcessor:
         ax.set_ylim([0, 100])
         ax.text(0.02, 0.9, country_index, transform=ax.transAxes, fontsize=15, fontweight='bold')
         
+    def run_TIAM_regions(self, solar_uf, onshore_uf, offshore_uf):
+
+        # Extract the relevant data
+        TIAM_regions = self.TIAM_regions 
+
+        # Specify input
+        solar_results = self.solar_results
+        onshore_results = self.wind_results
+        offshore_results = self.offshore_results
+
+        # Call postprocessing function to create the corresponding supply curve
+        self.plot_TIAM_lcoe(solar_results, onshore_results, offshore_results, solar_uf, onshore_uf, offshore_uf)
+
+        
 
         
     def plot_TIAM_lcoe(self, solar_filtered_results, onshore_filtered_results, offshore_filtered_results, solar_uf, onshore_uf, offshore_uf):
 
         # Get Solar and Wind Datasets with technical potential
-        solar_ds = self.get_supply_curves_v2(solar_filtered_results,  "Solar")
-        wind_ds = self.get_supply_curves_v2(onshore_filtered_results, "Onshore Wind")
-        offshore_ds = self.get_supply_curves_v2(offshore_filtered_results, "Offshore Wind")
+        solar_ds = self.get_supply_curves_v2(solar_filtered_results,  "Solar", LCOE_cutoff="True")
+        wind_ds = self.get_supply_curves_v2(onshore_filtered_results, "Onshore Wind", LCOE_cutoff="True")
+        offshore_ds = self.get_supply_curves_v2(offshore_filtered_results, "Offshore Wind", LCOE_cutoff="True")
 
 
         # Plot corresponding results separately
@@ -726,6 +763,44 @@ class PostProcessor:
 
         def thousands_format(x, pos):
             return f'{int(x):,}'
+        
+        # Find the index and corresponding cumulative potential for country WACC
+        def find_cumulative_at_lcoe(lcoe_series, potential_series, target):
+            """
+            Finds the cumulative potential at the point where LCOE reaches the target value.
+
+            """
+            # Ensure the series are sorted by LCOE
+            sorted_indices = lcoe_series.sort_values().index
+            lcoe_sorted = lcoe_series[sorted_indices]
+            potential_sorted = potential_series[sorted_indices]
+
+            # Interpolate to find the cumulative potential at the target LCOE
+            cumulative_at_target = np.interp(target, lcoe_sorted, potential_sorted)
+            return cumulative_at_target
+        
+        
+        def get_cumulative_potential(region, target_lcoe, wacc_grouped, uniform_grouped):
+            country_cumulative_at_target = find_cumulative_at_lcoe(
+                wacc_grouped['Calculated_LCOE'].get_group(region),
+                wacc_grouped['cumulative_potential'].get_group(region),
+                target_lcoe
+            )
+
+            # Get the cumulative potential at the target LCOE for uniform WACC
+            uniform_cumulative_at_target = find_cumulative_at_lcoe(
+                uniform_grouped['Uniform_LCOE'].get_group(region),
+                uniform_grouped['cumulative_potential'].get_group(region),
+                target_lcoe
+            )
+
+            # Get maximums
+            uniform_cumulative_max = np.nanmax(uniform_grouped['cumulative_potential'].get_group(region))
+            country_cumulative_max = np.nanmax(wacc_grouped['cumulative_potential'].get_group(region))
+
+            # Print the results
+            print(f"{region}:Cumulative potential at LCOE {target_lcoe} for country WACC: {country_cumulative_at_target} TWh, {country_cumulative_at_target/country_cumulative_max*100:0.2f}% of {country_cumulative_max}TWh")
+            print(f"{region}:Cumulative potential at LCOE {target_lcoe} for uniform WACC: {uniform_cumulative_at_target} TWh, {uniform_cumulative_at_target/uniform_cumulative_max*100:0.2f}% of {uniform_cumulative_max}TWh")
 
         # Convert the dataset into a dataframe
         supply_df = supply_ds.to_dataframe()
@@ -783,6 +858,14 @@ class PostProcessor:
         "USA": "firebrick",       # Changed from "crimson" to "firebrick" for a slightly muted red
         "WEU": "navy"             # Changed from "darkblue" to "navy" for stronger differentiation
         }
+        
+        if technology == "Solar":
+            target_lcoe = 60
+        elif technology == "Offshore Wind":
+            target_lcoe = 106
+        else:
+            target_lcoe = 75
+        
         # Plot the results
         if technology == "Offshore Wind":
             width_ratio = [1, 1]
@@ -799,6 +882,9 @@ class PostProcessor:
 
             # Extract color for region
             region_shading = region_colors.get(region, "grey")
+            
+            # Print data
+            get_cumulative_potential(region, target_lcoe, wacc_grouped, uniform_grouped)
 
 
             # Get cumulative production data for the region
@@ -839,6 +925,9 @@ class PostProcessor:
 
             # Extract color for region
             region_shading = region_colors.get(region, "grey")
+            
+            # Print data
+            get_cumulative_potential(region, target_lcoe, wacc_grouped, uniform_grouped)
 
 
             # Get cumulative production data for the region
@@ -898,8 +987,4 @@ class PostProcessor:
 
         plt.show()
 
-
-        
-
-        
-       
+ 
